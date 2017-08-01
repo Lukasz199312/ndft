@@ -162,8 +162,28 @@ describe('client App - register', () => {
       expect(value).toEqual('');
       done();
     });
-  }); 
+  });
 
-  
+  /**
+   * check register button
+   */
 
+  it('button should be disabled', () => {
+    page.getRegisterButton().getAttribute('disabled').then((value) => {
+      expect(value).toBeTruthy();
+    });
+  });
+
+  it('button should be not disabled after fill all inputs', (done) => {
+    page.getInputEmail().sendKeys('testmail@test.pl');
+    page.getInputRepatEmail().sendKeys('testmail@test.pl');
+
+    page.getInputPassword().sendKeys('password123X');
+    page.getInputRepeatPassword().sendKeys('password123X');
+
+    page.getRegisterButton().getAttribute('disalbed').then((value) => {
+      expect(value).toBeFalsy();
+      done();
+    });
+  });
 });

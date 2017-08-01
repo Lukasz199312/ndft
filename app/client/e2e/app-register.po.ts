@@ -49,4 +49,8 @@ export class ClientPage {
     return element(by.className('btn-warning'));
   }
 
+  getRegisterButton() {
+    return element(by.className('btn-danger'));
+  }
+
 }
