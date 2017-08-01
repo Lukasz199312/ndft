@@ -143,4 +143,27 @@ describe('client App - register', () => {
     });
   });
 
+  it('repeate email input should be empty', (done) => {
+    page.getInputRepatEmail().getAttribute('value').then((value) => {
+      expect(value).toEqual('');
+      done();
+    });
+  });
+
+  it('password input should be empty', (done) => {
+    page.getInputPassword().getAttribute('value').then((value) => {
+      expect(value).toEqual('');
+      done();
+    });
+  });
+
+  it('email input should be empty', (done) => {
+    page.getInputRepeatPassword().getAttribute('value').then((value) => {
+      expect(value).toEqual('');
+      done();
+    });
+  }); 
+
+  
+
 });
