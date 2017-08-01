@@ -1,0 +1,26 @@
+<!-->Left menu position</!-->
+<nav class="navbar navbar-default" id="navbar-no-loggedID">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">{{'NavBar.Title' | translate }}</a>
+    </div>
+    <ul class="nav navbar-nav space">
+      <li class="active"><a href="#">Home</a></li>
+      <li><a href="#">Page 1</a></li>
+      <li><a href="#">Page 2</a></li>
+      <li><a href="#">Page 3</a></li>
+    </ul>
+    <!-->Rigt menu postion</!-->
+    <ul class="nav navbar-nav navbar-right">
+      <li class="dropdown">
+        <a href="" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-log-in"></span> Sign In <span class="caret"></span></a>
+        <ul class="dropdown-menu" style="padding: 15px; min-width: 250px" id="dropdown-menu-log-in">
+          <login-form></login-form>
+        </ul>
+      </li>
+      <li><a href="#myModal" data-toggle="modal" data-target="#registerModal" id='register-link-id'><span class="glyphicon glyphicon-user"></span> {{'Register.Register' | translate}}</a></li>
+    </ul>
+  </div>
+</nav>
+
+<register-modal></register-modal>

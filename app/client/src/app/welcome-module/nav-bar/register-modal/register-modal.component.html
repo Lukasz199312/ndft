@@ -1,0 +1,53 @@
+<!-- Modal -->
+<div id="registerModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content" id="register-modal-id">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"></button>
+        <h4 class="modal-title">{{'Register.Header' | translate}}</h4>
+      </div>
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form #registerForm="ngForm">
+          <!--Email Group -->
+          <div class="form-group">
+            <label for="email">{{'Register.Email' | translate}}</label>
+            <input #email ngModel class="form-control" id="email" name="email" minlength="6" maxlength="64" required placeholder="{{'Register.Email-Placeholder' | translate}}"
+              (blur)='checkName($event.target, "valid", "invalid")' id="input-email-id">
+            <div class="alert alert-danger" *ngIf="emailMsg" id="email-error-msg-id">
+              {{ emailMsg }}
+            </div>
+          </div>
+          <!-- Repeat Email Group -->
+          <div class="form-group">
+            <label for="emailRepeat">{{'Register.Email-Repeat' | translate}}</label>
+            <input #repeatEmail ngModel class="form-control" id="emailRepeat" name="emailRepeat" required minlength="6" maxlength="64"
+              Repeat.value placeholder="{{'Register.Email-Repeat-Placeholder' | translate}}" (keyup)="isEmailEqual($event.target, 'valid', 'invalid')" id="input-repeat-email-id">
+          </div>
+          <!-- Password Group -->
+          <div class="form-group">
+            <label for="registerPassword">{{'Register.Password' | translate}}</label>
+            <input #password ngModel class="form-control" type="password" id="registerPassword" name="registerPassword" required minlength="6"
+              maxlength="32"  placeholder="{{'Register.Password-Placeholder' | translate}}" (blur)='passwordSyntax($event.target, "valid", "invalid")' id="input-password-id">
+          </div>
+          <div class="alert alert-danger" *ngIf="passwordMsg" id="password-error-msg-id">
+            {{ passwordMsg }}
+          </div>
+          <!-- Password Repeat Group -->
+          <div class="form-group">
+            <label for="registerPasswordRepeat">{{'Register.Password-Repeat' | translate}}</label>
+            <input #repeatPassword ngModel class="form-control" type="password" id="registerPasswordRepeat" name="registerPasswordRepeat" required minlength="6"
+              maxlength="32" required placeholder="{{'Register.Password-Repeat-Placeholder' | translate}}" (keyup)='checkPassword($event.target, "valid", "invalid")' id="input-repeat-password-id">
+          </div>
+        </form>
+      </div>
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" [disabled]=" passwordMsg !='' || emailMsg !='' || !registerForm.form.valid">Register</button>
+        <button type="button" class="btn btn-warning" data-dismiss="modal" (click)='registerForm.form.reset(); resetErrorMsg(); removeStyles([email,repeatEmail,password,repeatPassword], "valid", "invalid")'>Close</button>
+      </div>
+    </div>
+  </div>
+</div>

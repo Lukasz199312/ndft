@@ -1,0 +1,36 @@
+<li>
+    <div class="row">
+        <div class="col-md-12">
+            <form class="form" accept-charset="UTF-8">
+                <!-->Login input</!-->
+                <div class="form-group">
+                    <label class="sr-only">Login</label>
+                    <input class=form-control [(ngModel)]="login" placeholder="{{'Auth.Email' | translate}}" name="Login">
+                </div>
+                <!-->Password input</!-->
+                <div class="form-group">
+                    <label class="sr-only">Passworld</label>
+                    <input class="form-control" [(ngModel)]="password" placeholder="{{'Auth.Password' | translate}}" type="password" name="password">
+                </div>
+                <!-->Check box</!-->
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"> {{'Auth.RememberMe' | translate}}
+                      </label>
+                </div>
+                <!-->Alert Messages</!-->
+                <div *ngIf="errorMSG" class="alert alert-danger">
+                    <div [innerHTML]="'Auth.ErrorSignIn' | translate"></div>
+                </div>
+                <!-->Submit button</!-->
+                <div class="form-group">
+                    <button type="button" class="btn btn-success btn-block" (click)="LogIn()">{{'Auth.LogIn' | translate}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</li>
+<li class="divider"></li>
+<li>
+    <input class="btn btn-primary btn-block" type="button" value="{{'Auth.FB' | translate}}">
+</li>
