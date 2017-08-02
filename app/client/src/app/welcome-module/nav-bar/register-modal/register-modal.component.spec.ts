@@ -41,12 +41,36 @@ class FakeLoader implements TranslateLoader {
 
 }
 
+class isExistServiceStub {
+    email(value: string): Promise<boolean> {
+        if (value == 'exist@email.pl') return Promise.resolve(false);
+        return Promise.resolve(true);
+    }
+}
+
+class SyntaxServiceStub {
+    public value: boolean;
+    password(password: string): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+}
+
 describe('Register Modal Component', () => {
     let comp: RegisterModalComponent;
     let fixture: ComponentFixture<RegisterModalComponent>;
     let de: DebugElement;
     let el: HTMLElement;
     let translate: TranslateService;
+
+    let emailInput: HTMLInputElement;
+    let emailRepeatInput: HTMLInputElement;
+    let passwordInput: HTMLInputElement;
+    let passwordRepeatInput: HTMLInputElement;
+
+    let errorEmailDiv: HTMLDivElement;
+    let errorPasswordDiv: HTMLDivElement;
+
+    let syntaxService: SyntaxServiceStub;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -57,7 +81,18 @@ describe('Register Modal Component', () => {
                 TranslateModule.forRoot({
                     loader: { provide: TranslateLoader, useClass: FakeLoader }
                 })
+            ],
+            providers: [
+                { provide: IsExistService, useClass: isExistServiceStub },
+                { provide: SyntaxService, useClass: SyntaxServiceStub }
             ]
+        }).overrideComponent(RegisterModalComponent, {
+            set: {
+                providers: [
+                    { provide: IsExistService, useClass: isExistServiceStub },
+                    { provide: SyntaxService, useClass: SyntaxServiceStub }
+                ]
+            }
         })
             .compileComponents()
             .then(() => {
@@ -65,6 +100,18 @@ describe('Register Modal Component', () => {
                 translate = TestBed.get(TranslateService);
                 comp = fixture.componentInstance;
                 translate.setDefaultLang('en');
+
+                emailInput = fixture.debugElement.query(By.css('#input-email-id')).nativeElement;
+                emailRepeatInput = fixture.debugElement.query(By.css('#input-repeat-email-id')).nativeElement;
+
+                passwordInput = fixture.debugElement.query(By.css('#input-password-id')).nativeElement;
+                passwordRepeatInput = fixture.debugElement.query(By.css('#input-repeat-password-id')).nativeElement;
+
+                syntaxService = TestBed.get(SyntaxService);
+                // syntaxService =  fixture.debugElement.injector.get(SyntaxService);
+
+                // errorEmailDiv = fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement;
+                //errorPasswordDiv = fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement;
             })
     }));
 
@@ -76,29 +123,115 @@ describe('Register Modal Component', () => {
     });
 
     it('should be able to get translations', () => {
-        // translations = {"TEST": "This is a test", "TEST2": "This is another test"};
-
-
-        // this will request the translation from the backend because we use a static files loader for TranslateService
         translate.get('Register.Header').subscribe((res: string) => {
             expect(res).toEqual('Register in NDFT Project');
         });
-
-        // this will request the translation from downloaded translations without making a request to the backend
-        // translate.get('TEST2').subscribe((res: string) => {
-        //     expect(res).toEqual('This is another test');
-        // });
     });
 
-    it('test', async(() => {
+    it('should translate email placeholder', () => {
+        fixture.detectChanges();
+        expect(emailInput.getAttribute('placeholder')).toEqual(translations.Register['Email-Placeholder']);
+    });
+
+    it('should translate repeat email placeholder', () => {
+        fixture.detectChanges();
+        expect(emailRepeatInput.getAttribute('placeholder')).toEqual(translations.Register['Email-Repeat-Placeholder']);
+    });
+
+    it('should translate password placeholder', () => {
+        fixture.detectChanges();
+        expect(passwordInput.getAttribute('placeholder')).toEqual(translations.Register['Password-Placeholder']);
+    });
+
+    it('should translate password repeat placeholder', () => {
+        fixture.detectChanges();
+        expect(passwordRepeatInput.getAttribute('placeholder')).toEqual(translations.Register['Password-Repeat-Placeholder']);
+    });
+
+    it('should display Email address is already in use. when email exist in database', async(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
-            expect(fixture.debugElement.query(By.css("#emailErrorID"))).toBeNull;
-            console.log(fixture.debugElement.query(By.css("#emailErrorID")));
-            fixture.debugElement.query(By.css("#inputEmailID")).nativeElement.value = "Darek";
+            emailInput.value = "exist@email.pl"
+            emailInput.dispatchEvent(new Event('blur'));
+
             fixture.detectChanges();
-            console.log(fixture.debugElement.query(By.css("#emailErrorID")));
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Email-Invalid-Exist-In-Database']);
+            });
         });
-          console.log("a" + fixture.debugElement.query(By.css("#emailErrorID")));
+    }));
+
+    it('should display This is not valid email adress. when email has wrong syntax', async(() => {
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            emailInput.value = "ex#"
+            emailInput.dispatchEvent(new Event('blur'));
+
+            fixture.detectChanges();
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+
+                expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Email-Wrong-Syntax']);
+                expect(emailInput.classList.contains('invalid')).toBeTruthy();
+            });
+        });
+    }));
+
+    it('should display Emails does not match. when email does not fit', async(() => {
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            emailInput.value = "email@email.pl"
+            emailInput.dispatchEvent(new Event('blur'));
+
+            fixture.detectChanges();
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                emailRepeatInput.value = "ex#1"
+                emailRepeatInput.dispatchEvent(new Event('keyup'));
+
+                fixture.detectChanges();
+                fixture.whenStable().then(() => {
+                    fixture.detectChanges();
+
+                    expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Email-Repeat-Match']);
+                    expect(emailRepeatInput.classList.contains('invalid')).toBeTruthy();
+                });
+
+            })
+        });
+    }));
+
+    it('should display Password does not match when password and reapt password not equal', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+
+            passwordInput.value = 'password1';
+            passwordRepeatInput.value = 'password123';
+            // syntaxService.value = true;
+
+            passwordInput.dispatchEvent(new Event('blur'));
+
+            fixture.detectChanges();
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+
+                passwordRepeatInput.dispatchEvent(new Event('keyup'));
+
+                fixture.detectChanges();
+
+                fixture.whenStable().then(() => {
+                    fixture.detectChanges();
+
+                    syntaxService.value = true;
+                    expect(fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Password-Match']);
+                    expect(passwordRepeatInput.classList.contains('invalid'));
+                });
+            });
+        })
     }));
 })

@@ -10,7 +10,7 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e",
+    "e2e": "ng e2e -s false -pc proxy.config",
     "e2e:watch": "watch 'ng e2e -s false -wu false' src e2e --wait=1"
   },
   "private": true,

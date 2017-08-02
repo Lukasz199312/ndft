@@ -125,7 +125,7 @@ describe('client App - register', () => {
   it('should close modal window', (done) => {
     page.getRegisterLink().click().then(() => {
       page.getRegisterModal().isDisplayed().then((value) => {
-        expect(value).toBeTruthy();
+        expect(value).toBeFalsy();
         done();
       })
     })

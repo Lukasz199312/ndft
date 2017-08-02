@@ -53,7 +53,6 @@ export class RegisterModalComponent implements OnInit {
             this.passwordMsgNotMatch.msg = res + '. ';
         });
 
-
         this.translate.get("Register.Password-Syntax").toPromise().then(res => {
             this.passwordMsgSyntax.msg = res + '. ';
         });
@@ -80,14 +79,12 @@ export class RegisterModalComponent implements OnInit {
             return;
         }
 
-
         var syntaxResult = this.syntaxEmail(email);
 
         if (!syntaxResult) {
             element.classList.add(styleInvalid);
             return;
         }
-
 
         this.isExistService.email(email).then(res => {
             //Set error msg
