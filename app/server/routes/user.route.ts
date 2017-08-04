@@ -41,7 +41,7 @@ export class UserRoute extends RoutePermission implements I_Route {
         this.router.post('/api/user', (req, res, next) => {
             var syntax = new SyntaxVerification();
             var getUser = new GetUser();
-
+            console.log(req.body);
             var name = req.body.name;
             var password = req.body.password;
             var repeatPassword = req.body.repeatPassword;

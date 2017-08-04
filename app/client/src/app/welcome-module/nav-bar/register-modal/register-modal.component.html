@@ -1,5 +1,5 @@
 <!-- Modal -->
-<div id="registerModal" class="modal fade" role="dialog">
+<div id="registerModal" class="modal fade" role="dialog" #dialogModal>
   <div class="modal-dialog">
 
     <!-- Modal content-->
@@ -45,8 +45,9 @@
       </div>
       <!-- Modal Footer -->
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" [disabled]=" passwordMsg !='' || emailMsg !='' || !registerForm.form.valid" id='register-button-id'>Register</button>
+        <button type="button" class="btn btn-danger"  data-dismiss="modal" [disabled]=" passwordMsg !='' || emailMsg !='' || !registerForm.form.valid" id='register-button-id' (click)='registerUser(); removeStyles([email,repeatEmail,password,repeatPassword], "valid", "invalid"); registerForm.form.reset();'>Register</button>
         <button type="button" class="btn btn-warning" data-dismiss="modal" (click)='registerForm.form.reset(); resetErrorMsg(); removeStyles([email,repeatEmail,password,repeatPassword], "valid", "invalid")'>Close</button>
+                <button type="button" class="btn btn-danger"  data-dismiss="modal" [disabled]=" passwordMsg !='' || emailMsg !='' || !registerForm.form.valid" id='register-button-id' (click)='registerUser(); registerForm.form.reset(); removeStyles([email,repeatEmail,password,repeatPassword], "valid", "invalid")'>Register</button>
       </div>
     </div>
   </div>

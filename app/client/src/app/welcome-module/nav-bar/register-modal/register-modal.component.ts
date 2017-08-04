@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
-import { NgModel } from '@angular/forms';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NgModel, NgForm } from '@angular/forms';
 import { IsExistService } from '../../../src/is-exist.service';
 import { SyntaxService } from '../../../src/syntax.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Syntax } from './../../../src/helpers/syntax';
+import { RegisterService } from "./register.service";
 
 @Component({
     selector: 'register-modal',
     templateUrl: './register-modal.component.html',
     styleUrls: ['./register-modal.css'],
-    providers: [IsExistService, SyntaxService]
+    providers: [IsExistService, SyntaxService, RegisterService]
 })
 export class RegisterModalComponent implements OnInit {
 
@@ -28,7 +29,9 @@ export class RegisterModalComponent implements OnInit {
     public repeatEmail: string = '';
     public password: string = '';
 
-    constructor(private isExistService: IsExistService, private translate: TranslateService, private syntaxService: SyntaxService) { }
+
+    constructor(private isExistService: IsExistService, private translate: TranslateService, 
+                private syntaxService: SyntaxService,   private registerService: RegisterService) { }
     /**
      * Set in18 translate for specified language
      */
@@ -259,6 +262,11 @@ export class RegisterModalComponent implements OnInit {
         element.classList.add(styleInvalid);
     }
 
+    public registerUser() {
+       
+      // this.registerService.register({email: 'lolas@os.pl', name: 'gachHuj', password: '123456', repeatPassword: '123456'});
+    }
+
     /**
      * remove css class from HTMLInputElement element
      * @param element 
@@ -284,6 +292,7 @@ export class RegisterModalComponent implements OnInit {
             el.classList.remove(styleInvalid);
         })
     }
+    
 }
 
 // //our root app component
