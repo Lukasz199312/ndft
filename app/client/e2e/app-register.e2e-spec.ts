@@ -122,11 +122,10 @@ describe('client App - register', () => {
     });
   });
 
-  it('should close modal window', (done) => {
+  it('should open modal window', () => {
     page.getRegisterLink().click().then(() => {
       page.getRegisterModal().isDisplayed().then((value) => {
-        expect(value).toBeFalsy();
-        done();
+        expect(value);
       })
     })
   });
@@ -168,9 +167,10 @@ describe('client App - register', () => {
    * check register button
    */
 
-  it('button should be disabled', () => {
+  it('button should be disabled', (done) => {
     page.getRegisterButton().getAttribute('disabled').then((value) => {
       expect(value).toBeTruthy();
+      done();
     });
   });
 
@@ -186,4 +186,5 @@ describe('client App - register', () => {
       done();
     });
   });
+
 });

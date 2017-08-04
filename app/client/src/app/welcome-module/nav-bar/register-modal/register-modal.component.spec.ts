@@ -30,7 +30,7 @@ let translations: any = {
         "Password-Placeholder": "Enter password",
         "Password-Repeat": "Repeat password",
         "Password-Repeat-Placeholder": "Confirm password",
-        "Password-Syntax": "Password length must be between 6 - 32. Allow character a-Z, 0-9 and !@#$%^&*()"
+        "Password-Syntax": "Password length must be between 6 - 32. Allow character a-Z, 0-9"
     }
 }
 
@@ -50,8 +50,9 @@ class isExistServiceStub {
 
 class SyntaxServiceStub {
     public value: boolean;
+
     password(password: string): Promise<boolean> {
-        return Promise.resolve(true);
+        return Promise.resolve(this.value);
     }
 }
 
@@ -97,8 +98,13 @@ describe('Register Modal Component', () => {
             .compileComponents()
             .then(() => {
                 fixture = TestBed.createComponent(RegisterModalComponent);
+
+                syntaxService = fixture.debugElement.injector.get(SyntaxService, SyntaxServiceStub);
+
                 translate = TestBed.get(TranslateService);
+
                 comp = fixture.componentInstance;
+
                 translate.setDefaultLang('en');
 
                 emailInput = fixture.debugElement.query(By.css('#input-email-id')).nativeElement;
@@ -107,7 +113,9 @@ describe('Register Modal Component', () => {
                 passwordInput = fixture.debugElement.query(By.css('#input-password-id')).nativeElement;
                 passwordRepeatInput = fixture.debugElement.query(By.css('#input-repeat-password-id')).nativeElement;
 
-                syntaxService = TestBed.get(SyntaxService);
+                //console.log("AfterEach Value: " + syntaxService.value);
+                syntaxService.value = true;
+
                 // syntaxService =  fixture.debugElement.injector.get(SyntaxService);
 
                 // errorEmailDiv = fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement;
@@ -117,6 +125,7 @@ describe('Register Modal Component', () => {
 
 
     it('is defined', () => {
+        syntaxService.value = true;
         expect(TranslateService).toBeDefined();
         expect(translate).toBeDefined();
         expect(translate instanceof TranslateService).toBeTruthy();
@@ -153,8 +162,8 @@ describe('Register Modal Component', () => {
         fixture.whenStable().then(() => {
             emailInput.value = "exist@email.pl"
             emailInput.dispatchEvent(new Event('blur'));
-
             fixture.detectChanges();
+            
             fixture.whenStable().then(() => {
                 fixture.detectChanges();
                 expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Email-Invalid-Exist-In-Database']);
@@ -170,8 +179,6 @@ describe('Register Modal Component', () => {
 
             fixture.detectChanges();
             fixture.whenStable().then(() => {
-                fixture.detectChanges();
-
                 expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Email-Wrong-Syntax']);
                 expect(emailInput.classList.contains('invalid')).toBeTruthy();
             });
@@ -187,14 +194,11 @@ describe('Register Modal Component', () => {
             fixture.detectChanges();
 
             fixture.whenStable().then(() => {
-                fixture.detectChanges();
                 emailRepeatInput.value = "ex#1"
                 emailRepeatInput.dispatchEvent(new Event('keyup'));
 
                 fixture.detectChanges();
                 fixture.whenStable().then(() => {
-                    fixture.detectChanges();
-
                     expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Email-Repeat-Match']);
                     expect(emailRepeatInput.classList.contains('invalid')).toBeTruthy();
                 });
@@ -203,11 +207,12 @@ describe('Register Modal Component', () => {
         });
     }));
 
-    it('should display Password does not match when password and reapt password not equal', async(() => {
+    it('should display Password does not match when password and repeat password not equal', async(() => {
+
+        syntaxService.value = true;
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
-            fixture.detectChanges();
 
             passwordInput.value = 'password1';
             passwordRepeatInput.value = 'password123';
@@ -218,20 +223,118 @@ describe('Register Modal Component', () => {
             fixture.detectChanges();
 
             fixture.whenStable().then(() => {
-                fixture.detectChanges();
 
                 passwordRepeatInput.dispatchEvent(new Event('keyup'));
 
                 fixture.detectChanges();
 
                 fixture.whenStable().then(() => {
-                    fixture.detectChanges();
-
-                    syntaxService.value = true;
                     expect(fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Password-Match']);
                     expect(passwordRepeatInput.classList.contains('invalid'));
                 });
             });
         })
+    }));
+
+    it('should display password wring syntax', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            fixture.detectChanges();
+
+            syntaxService.value = false;
+
+            passwordInput.value = '`';
+
+            passwordInput.dispatchEvent(new Event('blur'));
+
+            fixture.detectChanges();
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();;
+                expect(fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement.innerHTML)
+                    .toContain(translations.Register['Password-Syntax']);
+            })
+
+        })
+    }));
+
+    it('should display password multiple message', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+
+            syntaxService.value = false;
+            passwordInput.value = '`';
+
+            passwordRepeatInput.value = 'wrong';
+            passwordInput.dispatchEvent(new Event('blur'));
+            fixture.detectChanges();
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+
+                passwordRepeatInput.dispatchEvent(new Event('keyup'));
+                fixture.detectChanges();
+
+                fixture.whenStable().then(() => {
+                    let div: HTMLDivElement = fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement;
+                    expect(div.innerHTML).toContain(translations.Register['Password-Match']);
+                    expect(div.innerHTML).toContain(translations.Register['Password-Syntax']);
+                });
+            })
+
+
+        });
+    }));
+
+    it('should enabled register button', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            // Password Input
+
+            syntaxService.value = true;
+            passwordInput.value = 'password123';
+
+            passwordInput.dispatchEvent(new Event('blur'));
+            passwordInput.dispatchEvent(new Event('input'));
+
+            fixture.detectChanges();
+
+            fixture.whenStable().then(() => {
+                // Password Repeat Email Input
+    
+                passwordRepeatInput.value = 'password123';
+                passwordRepeatInput.dispatchEvent(new Event('keyup'));
+                passwordRepeatInput.dispatchEvent(new Event('input'));
+                fixture.detectChanges();
+
+                fixture.whenStable().then(() => {
+   
+                    //Email Input
+                    emailInput.value = "correct@mail.pl";
+                    emailInput.dispatchEvent(new Event('blur'));
+                    emailInput.dispatchEvent(new Event('input'));
+                    fixture.detectChanges();
+
+                    fixture.whenStable().then(() => {
+                        //Email Repeat Input
+
+                        emailRepeatInput.value = "correct@mail.pl";
+                        emailRepeatInput.dispatchEvent(new Event('keyup'));
+                        emailRepeatInput.dispatchEvent(new Event('input'));
+                        fixture.detectChanges();
+
+                        fixture.whenStable().then(() => {
+
+                            var registerButton: HTMLButtonElement = fixture.debugElement.query(By.css('#register-button-id')).nativeElement;
+                            expect(registerButton.disabled).toBeFalsy();
+                        });
+                    });
+
+                });
+            });
+        });
     }));
 })

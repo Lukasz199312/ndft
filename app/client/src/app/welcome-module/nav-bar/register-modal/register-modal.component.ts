@@ -180,6 +180,7 @@ export class RegisterModalComponent implements OnInit {
 
     public passwordSyntax(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
         var password = element.value;
+ 
         if (password == '') {
             this.removeStyle(element, styleValid, styleInvalid);
             return;
