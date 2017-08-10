@@ -14,6 +14,9 @@
     "Register": {
         "Header": "Register in NDFT Project",
         "Register": "Register",
+        "Name": "User Name",
+        "Name-Placeholder": "Enter user name",
+        "User-Invalid-Exist-In-Database": "User name is already in use",
         "Email": "Email address",
         "Email-Placeholder": "Enter email",
         "Email-Repeat": "Repeat email address",

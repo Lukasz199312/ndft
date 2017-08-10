@@ -21,6 +21,9 @@
       "jasmine"
     ]
   },
+  "exclude": [
+    "node_modules"
+  ],
   "include": [
     "app/server/**/*.ts",
     "app/server/bin/www",

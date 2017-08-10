@@ -6,6 +6,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { Syntax } from './../../../src/helpers/syntax';
 import { RegisterService } from "./register.service";
 
+import { NgClass } from '@angular/common';
+import { TranslateMSG } from "../../../src/translate-msg";
+
 @Component({
     selector: 'register-modal',
     templateUrl: './register-modal.component.html',
@@ -14,50 +17,69 @@ import { RegisterService } from "./register.service";
 })
 export class RegisterModalComponent implements OnInit {
 
-    public emailMsgExist = { value: '', msg: '' };
-    public emailMsgNotMatch = { value: '', msg: '' };
-    public emailMsgNotDefined = { value: '', msg: '' };
-    public emailMsgSyntax = { value: '', msg: '' };
-    public emailMsg: string;
+    public nameMsgExist: TranslateMSG = new TranslateMSG();
 
-    public passwordMsgNotMatch = { value: '', msg: '' };
-    public passwordMsgSyntax = { value: '', msg: '' };
-    public passwordMsg: string;
+    public emailMsgExist: TranslateMSG = new TranslateMSG();
+    public emailMsgNotMatch: TranslateMSG = new TranslateMSG();
+    public emailMsgNotDefined: TranslateMSG = new TranslateMSG();;
+    public emailMsgSyntax: TranslateMSG = new TranslateMSG();;
+
+    public emailMsg: string = '';
+    public isEmailComplete: boolean = false;
+
+    public passwordMsgNotMatch: TranslateMSG = new TranslateMSG();
+    public passwordMsgSyntax: TranslateMSG = new TranslateMSG();
+
+    public passwordMsg: string = '';
+    public isPasswordComplete: boolean = false;
+
 
 
     public email: string = '';
     public repeatEmail: string = '';
     public password: string = '';
+    public repeatPassword: string = '';
 
+    public te: boolean = true;
 
-    constructor(private isExistService: IsExistService, private translate: TranslateService, 
-                private syntaxService: SyntaxService,   private registerService: RegisterService) { }
+    @ViewChild('emailInput') emailInput: NgModel;
+    @ViewChild('emailRepeatInput') emailRepeatInput: NgModel;
+
+    @ViewChild('passwordInput') passwordInput: NgModel;
+    @ViewChild('passwordRepeatInput') passwordRepeatInput: NgModel;
+
+    constructor(private isExistService: IsExistService, private translate: TranslateService,
+        private syntaxService: SyntaxService, private registerService: RegisterService) { }
     /**
      * Set in18 translate for specified language
      */
     ngOnInit(): void {
+        this.translate.get('Register.Name-invalid-Exist-In-Database').toPromise().then(res => {
+            this.nameMsgExist.initialize(res + '. ');
+        });
+
         this.translate.get('Register.Email-Invalid-Exist-In-Database').toPromise().then(res => {
-            this.emailMsgExist.msg = res + '. ';
+            this.emailMsgExist.initialize(res + '. ');
         });
 
         this.translate.get("Register.Email-Repeat-Match").toPromise().then(res => {
-            this.emailMsgNotMatch.msg = res + '. ';
+            this.emailMsgNotMatch.initialize(res + '. ');
         });
 
         this.translate.get("Register.Email-Must-Be-Defined").toPromise().then(res => {
-            this.emailMsgNotDefined.msg = res + '. ';
+            this.emailMsgNotDefined.initialize(res + '. ');
         });
 
         this.translate.get("Register.Email-Wrong-Syntax").toPromise().then(res => {
-            this.emailMsgSyntax.msg = res + '. ';
+            this.emailMsgSyntax.initialize(res + '. ');
         });
 
         this.translate.get("Register.Password-Match").toPromise().then(res => {
-            this.passwordMsgNotMatch.msg = res + '. ';
+            this.passwordMsgNotMatch.initialize(res + '. ');
         });
 
         this.translate.get("Register.Password-Syntax").toPromise().then(res => {
-            this.passwordMsgSyntax.msg = res + '. ';
+            this.passwordMsgSyntax.initialize(res + '. ');
         });
     }
 
@@ -65,57 +87,60 @@ export class RegisterModalComponent implements OnInit {
         return JSON.stringify(object);
     }
 
+
     /**
-     * check does email is in database
-     * @param element 
-     * @param styleValid 
-     * @param styleInvalid 
+     * 
      */
-    public checkName(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
-        var email = element.value;
+    public checkEmail() {
+        if (this.email != this.emailInput.value) {
+            if (this.isEmailEmpty() == false) {
+                this.isEmailEqual();
+                var syntaxResult = this.syntaxEmail(this.email);
 
-        if (this.email == email) return;
-        this.email = email;
+                if (syntaxResult) {
+                    this.isExistService.email(this.email).then(res => {
+                        //Set error msg
+                        if (!res)
+                            this.emailMsgExist.set();
 
-        if (email == '') {
-            this.removeStyle(element, styleValid, styleInvalid);
-            return;
-        }
+                        else
+                            this.emailMsgExist.reset();
 
-        var syntaxResult = this.syntaxEmail(email);
-
-        if (!syntaxResult) {
-            element.classList.add(styleInvalid);
-            return;
-        }
-
-        this.isExistService.email(email).then(res => {
-            //Set error msg
-            if (!res) {
-                this.emailMsgExist.value = this.emailMsgExist.msg;
-                this.setInvalidStyle(element, styleValid, styleInvalid);
-            }
-            else {
-                this.emailMsgExist.value = '';
-                this.setValidStyle(element, styleValid, styleInvalid);
+                        this.updateEmailMsg();
+                    });
+                }
+                this.isEmailComplete = true
             }
 
-            this.updateEmailMsg();
-        });
+        }
     }
     /**
-     * check email syntax
+     * check is email empty
+     */
+    private isEmailEmpty(): boolean {
+        this.email = this.emailInput.value;
+        if (this.email == '') {
+            this.resetEmailMsg();
+            this.isEmailComplete = false;
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * check email syntax, return true if it is correct
      * @param email 
      */
     private syntaxEmail(email: string): boolean {
         var result = new Syntax().isEmailAddress(email);
         if (result) {
-            this.emailMsgSyntax.value = '';
+            this.emailMsgSyntax.reset();
             this.updateEmailMsg();
             return true;
         }
         else {
-            this.emailMsgSyntax.value = this.emailMsgSyntax.msg;
+            this.emailMsgSyntax.set();
             this.updateEmailMsg();
             return false;
         }
@@ -127,25 +152,26 @@ export class RegisterModalComponent implements OnInit {
      * @param styleValid 
      * @param styleInvalid 
      */
-    public isEmailEqual(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
-        var email = element.value;
-        if (email == '' || this.email == '') {
-            this.removeStyle(element, styleValid, styleInvalid);
+    public isEmailEqual() {
+        this.repeatEmail = this.emailRepeatInput.value;
+        console.log(this.repeatEmail);
+
+        if (this.repeatEmail == '') {
+            this.emailMsgNotMatch.reset();
+            this.updateEmailMsg();
+
             return;
         }
+        if (this.email == '') return;
 
-        if (this.email == email) {
-            this.emailMsgNotMatch.value = '';
-            this.setValidStyle(element, styleValid, styleInvalid);
-        }
-        else {
-            this.emailMsgNotMatch.value = this.emailMsgNotMatch.msg;
-            this.setInvalidStyle(element, styleValid, styleInvalid);
-        }
+        if (this.repeatEmail == this.emailInput.value)
+            this.emailMsgNotMatch.reset();
+        else
+            this.emailMsgNotMatch.set();
 
-        this.repeatEmail = email;
         this.updateEmailMsg();
     }
+
 
     /**
      * check is password equal to repeat password
@@ -154,22 +180,18 @@ export class RegisterModalComponent implements OnInit {
      * @param styleInvalid 
      */
 
-    public checkPassword(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
-        var password = element.value
-        if (password == '') {
-            this.removeStyle(element, styleValid, styleInvalid);
-            return;
-        }
-        if (this.password == password) {
-            this.passwordMsgNotMatch.value = '';
-            this.setValidStyle(element, styleValid, styleInvalid);
+    public passwordEqual() {
+        var value = this.passwordRepeatInput.value;
+
+        if (value != '') {
+            if (value == this.passwordInput.value) {
+                this.passwordMsgNotMatch.reset();
+            }
+            else this.passwordMsgNotMatch.set();
         }
         else {
-            this.passwordMsgNotMatch.value = this.passwordMsgNotMatch.msg;
-            this.setInvalidStyle(element, styleValid, styleInvalid);
+            this.passwordMsgNotMatch.reset();
         }
-
-        if (password == '' || this.password == '') this.passwordMsgNotMatch.value = '';
 
         this.updatePasswordMsg();
     }
@@ -181,26 +203,25 @@ export class RegisterModalComponent implements OnInit {
      * @param styleInvalid 
      */
 
-    public passwordSyntax(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
-        var password = element.value;
- 
-        if (password == '') {
-            this.removeStyle(element, styleValid, styleInvalid);
-            return;
+    public passwordSyntax() {
+        this.password = this.passwordInput.value;
+        this.passwordEqual();
+
+        if (this.password != '') {
+            this.syntaxService.isPassword(this.password).then((res) => {
+                if (res) this.passwordMsgSyntax.reset();
+                else this.passwordMsgSyntax.set();
+                this.updatePasswordMsg();
+                this.isPasswordComplete = true;
+            })
+        }
+        else {
+            console.log('rest');
+            this.passwordMsgSyntax.reset();
+            this.isPasswordComplete = false;
         }
 
-        this.syntaxService.password(password).then(res => {
-            if (res) {
-                this.passwordMsgSyntax.value = '';
-                this.setValidStyle(element, styleValid, styleInvalid);
-            }
-            else {
-                this.passwordMsgSyntax.value = this.passwordMsgSyntax.msg;
-                this.setInvalidStyle(element, styleValid, styleInvalid);
-            }
-            this.password = password;
-            this.updatePasswordMsg();
-        });
+        this.updatePasswordMsg();
     }
 
     /**
@@ -208,7 +229,8 @@ export class RegisterModalComponent implements OnInit {
      */
 
     private updateEmailMsg() {
-        this.emailMsg = this.emailMsgSyntax.value + this.emailMsgExist.value + this.emailMsgNotMatch.value;
+        this.emailMsg = this.emailMsgSyntax.get() + this.emailMsgExist.get() + this.emailMsgNotMatch.get();
+        console.log(this.emailMsg);
     }
 
     /**
@@ -216,7 +238,7 @@ export class RegisterModalComponent implements OnInit {
      */
 
     private updatePasswordMsg() {
-        this.passwordMsg = this.passwordMsgSyntax.value + this.passwordMsgNotMatch.value;
+        this.passwordMsg = this.passwordMsgSyntax.get() + this.passwordMsgNotMatch.get();
     }
 
     /**
@@ -224,60 +246,36 @@ export class RegisterModalComponent implements OnInit {
      */
 
     public resetErrorMsg() {
-        // Email group message
-        this.emailMsgSyntax.value = '';
-        this.emailMsgExist.value = '';
-        this.emailMsgNotMatch.value = '';
+        this.resetEmailMsg();
+        this.resetPasswordMsg();
 
-        //password group message
-        this.passwordMsgSyntax.value = '';
-        this.passwordMsgNotMatch.value = '';
+    }
+    /**
+     * reset email message
+     */
+    private resetEmailMsg() {
+        this.emailMsgSyntax.reset();
+        this.emailMsgExist.reset();
+        this.emailMsgNotMatch.reset();
 
-        //message error containers update
         this.updateEmailMsg();
+    }
+
+    /**
+     * reset password message
+     */
+    private resetPasswordMsg() {
+        this.passwordMsgSyntax.reset();
+        this.passwordMsgNotMatch.reset();
+
         this.updatePasswordMsg();
     }
 
-    /**
-     * set css class to HTMLInputElement element
-     * @param element 
-     * @param styleValid 
-     * @param styleInvalid 
-     */
-
-    public setValidStyle(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
-        element.classList.remove(styleInvalid);
-        element.classList.add(styleValid);
-    }
-
-    /**
-     * set css class to HTMLInputElement element
-     * @param element 
-     * @param styleValid 
-     * @param styleInvalid 
-     */
-
-    public setInvalidStyle(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
-        element.classList.remove(styleValid);
-        element.classList.add(styleInvalid);
-    }
-
     public registerUser() {
-       
-      // this.registerService.register({email: 'lolas@os.pl', name: 'gachHuj', password: '123456', repeatPassword: '123456'});
+
+        // this.registerService.register({email: 'lolas@os.pl', name: 'gachHuj', password: '123456', repeatPassword: '123456'});
     }
 
-    /**
-     * remove css class from HTMLInputElement element
-     * @param element 
-     * @param styleValid 
-     * @param styleInvalid 
-     */
-
-    public removeStyle(element: HTMLInputElement, styleValid: string, styleInvalid: string) {
-        element.classList.remove(styleValid);
-        element.classList.remove(styleInvalid);
-    }
 
     /**
      * remove css class from HTMLInputelement array elements
@@ -287,50 +285,11 @@ export class RegisterModalComponent implements OnInit {
      */
 
     public removeStyles(element: HTMLInputElement[], styleValid: string, styleInvalid: string) {
-        element.forEach( el => {
+        element.forEach(el => {
             el.classList.remove(styleValid);
             el.classList.remove(styleInvalid);
         })
     }
-    
+
 }
 
-// //our root app component
-// import {Component, NgModule, ViewChild} from '@angular/core'
-// import {BrowserModule} from '@angular/platform-browser'
-
-// @Component({
-//   selector: 'my-app',
-//   template: `
-//     <div>
-//       <button (click)="clearSearch()">Clear</button>
-//       <button (click)="setvalue()">Set Value</button>
-//       <input type='text' id='loginInput' #abc/>
-//     </div> 
-//   `,
-// })
-// export class App {
-//   searchValue:string = '';
-//   @ViewChild('abc')abc: string;
-//   constructor(){}
-  
-//   ngAfterViewInit(){
-//     document.getElementById('loginInput').value = '123344565';
-//   }
-  
-//   setvalue(){
-//     document.getElementById('loginInput').value = '123';
-//   }
-//   clearSearch() {
-//     console.log(this.abc.nativeElement.value);
-//   }
-// }
-
-// @NgModule({
-//   imports: [ BrowserModule ],
-//   declarations: [ App ],
-//   bootstrap: [ App ]
-// })
-// export class AppModule {
-  
-// }

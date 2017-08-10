@@ -11,7 +11,7 @@ import 'rxjs/add/operator/toPromise';
 export class SyntaxService {
     constructor(private http: Http) { }
 
-    public password(password: string): Promise<boolean> {
+    public isPassword(password: string): Promise<boolean> {
         password = ToHex.convert(password).flatt();
         return this.http.get('/api/password-syntax/' + password)
             .map((res: any) => {
