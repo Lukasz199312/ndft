@@ -8,4 +8,11 @@ export class Syntax {
         }
 
     }
+
+    public isName(val: string) : boolean {
+        if(val.match(/^[a-zA-Z0-9]* ?[a-zA-Z0-9]*$/)) {
+            return true;
+        }
+        return false;
+    }
 }

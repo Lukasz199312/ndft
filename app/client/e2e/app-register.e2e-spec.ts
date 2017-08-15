@@ -32,6 +32,39 @@ describe('client App - register', () => {
     });
   })
   /**
+   * cheecking input name
+   */
+  it('should type John Smith', (done) => {
+    page.getInputName().sendKeys("John Smith").then(() => {
+      page.getInputName().getAttribute("value").then((text) => {
+        expect(text).toEqual("John Smith");
+        done();
+      });
+    });
+  })
+
+  it('should type John Smith 007', (done) => {
+    page.getInputName().clear().then(() => {
+      page.getInputName().sendKeys("John Smith 007").then(() => {
+
+        page.getInputName().getAttribute("value").then((text) => {
+
+          expect(text).toEqual("John Smith 007");
+          page.getInputName().getAttribute('class').then((valueClass) => {
+
+            expect(valueClass).toContain('invalid');
+            page.getErrorNameMsg().getAttribute('innerHTML').then((errorMSG) => {
+
+              expect(errorMSG).toContain(translate['Name-Wrong-Syntax']);
+              done();
+            })
+          })
+        });
+      });
+    })
+  })
+
+  /**
    * Checking input *email*
    */
   it('should type "wrongEmail"', (done) => {
@@ -122,18 +155,27 @@ describe('client App - register', () => {
     });
   });
 
-  it('should open modal window', () => {
+  it('should open modal window', (done) => {
     page.getRegisterLink().click().then(() => {
       page.getRegisterModal().isDisplayed().then((value) => {
         expect(value);
+        done();
       })
     })
   });
 
 
+
   /**
-   * check that the buttons are empty
+   * check that the inputs are empty and dont have set valid or invalid form
    */
+  it('name input should be empty', (done) => {
+    page.getInputName().getAttribute('value').then((value) => {
+      expect(value).toEqual('');
+      done();
+    });
+  });
+
 
   it('email input should be empty', (done) => {
     page.getInputEmail().getAttribute('value').then((value) => {
@@ -162,6 +204,58 @@ describe('client App - register', () => {
       done();
     });
   });
+
+
+  /**
+   * valid, invalid 
+   */
+
+  it('name input should be empty', (done) => {
+    page.getInputName().getAttribute('class').then((value) => {
+      expect(value).not.toContain('valid');
+      expect(value).not.toContain('invalid');
+
+      done();
+    });
+  });
+
+  it('email input should be empty', (done) => {
+    page.getInputEmail().getAttribute('class').then((value) => {
+      expect(value).not.toContain('valid');
+      expect(value).not.toContain('invalid');
+
+      done();
+    });
+  });
+
+  it('repeate email input should be empty', (done) => {
+    page.getInputRepatEmail().getAttribute('class').then((value) => {
+      expect(value).not.toContain('valid');
+      expect(value).not.toContain('invalid');
+
+      done();
+    });
+  });
+
+  it('password input should be empty', (done) => {
+    page.getInputPassword().getAttribute('class').then((value) => {
+      expect(value).not.toContain('valid');
+      expect(value).not.toContain('invalid');
+
+      done();
+    });
+  });
+
+  it('email input should be empty', (done) => {
+    page.getInputRepeatPassword().getAttribute('class').then((value) => {
+      expect(value).not.toContain('valid');
+      expect(value).not.toContain('invalid');
+
+      done();
+    });
+  });
+
+
 
   /**
    * check register button

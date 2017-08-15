@@ -7,7 +7,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 @Injectable()
-export class IsExistService {
+export class IsAvailableService {
     constructor(private http: Http) { }
 
     public email(name: string): Promise<boolean> {
@@ -18,5 +18,15 @@ export class IsExistService {
             })
             .toPromise()
             .catch(err => { throw err })
+    }
+
+    public name(name: string): Promise<boolean> {
+        return this.http.get('api/user-name-available/' + name)
+        .map((res: any) => {
+            let body = res.json();
+            return body.isAvailable;
+        })
+        .toPromise()
+        .catch(err => { throw err });
     }
 }

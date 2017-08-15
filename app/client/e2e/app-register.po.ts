@@ -21,6 +21,14 @@ export class ClientPage {
     return element(by.id("register-modal-id"));
   }
 
+  getInputName() {
+    return element(by.id("input-name-id"));
+  }
+
+  getErrorNameMsg() {
+    return element(by.id("name-error-msg-id"));
+  }
+
   getInputEmail() {
     return element(by.id("input-email-id"));
   }

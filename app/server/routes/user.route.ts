@@ -41,7 +41,6 @@ export class UserRoute extends RoutePermission implements I_Route {
         this.router.post('/api/user', (req, res, next) => {
             var syntax = new SyntaxVerification();
             var getUser = new GetUser();
-            console.log(req.body);
             var name = req.body.name;
             var password = req.body.password;
             var repeatPassword = req.body.repeatPassword;
@@ -49,14 +48,14 @@ export class UserRoute extends RoutePermission implements I_Route {
 
             if (name === undefined) return res.send({ registerComplete: false, message: 'Name is undefined' });
             if (password === undefined) return res.send({ registerComplete: false, message: 'Password is undefined' });
-            if (repeatPassword === undefined) return res.send({ registerComplete: false, message: 'Password is undefined' });
+            if (repeatPassword === undefined) return res.send({ registerComplete: false, message: 'Repeat Password is undefined' });
             if (email === undefined) return res.send({ registerComplete: false, message: 'Email is undefined' });
 
             if (password != repeatPassword) return res.send({ registerComplete: false, message: 'The password must be the same' });
 
             if (!syntax.isEmailAddress(email)) return res.send({ registerComplete: false, message: 'Invalid email address' });
             if (!syntax.Length(6, 32, password)) return res.send({ registerComplete: false, message: 'Invalid password length' });
-            if (!syntax.isAlphaNumeric(password)) return res.send({ registerComplete: false, message: 'Invalid password syntax' });
+            //if (!syntax.isAlphaNumeric(password)) return res.send({ registerComplete: false, message: 'Invalid password syntax' });
 
             getUser.by({ name: name }).then(resolve => {
                 if (resolve) return res.send({ registerComplete: false, message: 'Username exist in database' });
@@ -87,7 +86,6 @@ export class UserRoute extends RoutePermission implements I_Route {
     private isNameAvailable() {
         this.router.get('/api/user-name-available/:name', (req, res, next) => {
             var name = req.params.name;
-
             new GetUser().by({ name: name }).then((resolve) => {
 
                 if (resolve == null) return res.send({ isAvailable: true })
@@ -132,6 +130,7 @@ export class UserRoute extends RoutePermission implements I_Route {
     private getUser() {
         this.router.get('/api/user/:id/:name', (req, res, next) => {
             res.send(req.params);
+            throw new Error("Method not implemented.");
         });
 
     }

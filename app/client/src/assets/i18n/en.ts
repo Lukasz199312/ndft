@@ -1,4 +1,5 @@
 export default{
+   {
     "NavBar": {
         "Title": "NDFT"
     },
@@ -14,6 +15,10 @@ export default{
     "Register": {
         "Header": "Register in NDFT Project",
         "Register": "Register",
+        "Name": "User Name",
+        "Name-Placeholder": "Enter user name",
+        "Name-Invalid-Exist-In-Database": "User name is already in use",
+        "Name-Wrong-Syntax": "This is not valid user name. Allow character a-Z, 0-9 and one [space] example: John, John09, John Smith",
         "Email": "Email address",
         "Email-Placeholder": "Enter email",
         "Email-Repeat": "Repeat email address",
@@ -29,4 +34,5 @@ export default{
         "Password-Repeat-Placeholder": "Confirm password",
         "Password-Syntax": "Password length must be between 6 - 32. Allow character a-Z, 0-9 and !@#$%^&*()"
     }
+}
 }

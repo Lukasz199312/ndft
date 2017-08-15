@@ -9,14 +9,19 @@ import { HttpLoaderFactory as HttpLoaderFactory } from "../../../app-translate.m
 import { HttpModule, Http, ConnectionBackend, RequestOptions } from '@angular/http';
 import { FormsModule } from '@angular/forms';
 
-import { IsExistService } from '../../../src/is-exist.service';
+import { IsAvailableService } from '../../../src/is-available.service';
 import { SyntaxService } from '../../../src/syntax.service';
 import { Observable } from "rxjs/Observable";
+import { RegisterService } from "./register.service";
 
 let translations: any = {
     "Register": {
         "Header": "Register in NDFT Project",
         "Register": "Register",
+        "Name": "User Name",
+        "Name-Placeholder": "Enter user name",
+        "Name-Invalid-Exist-In-Database": "User name is already in use",
+        "Name-Wrong-Syntax": "This is not valid user name. Allow character a-Z, 0-9 and one [space] example: John, John09, John Smith",
         "Email": "Email address",
         "Email-Placeholder": "Enter email",
         "Email-Repeat": "Repeat email address",
@@ -41,9 +46,14 @@ class FakeLoader implements TranslateLoader {
 
 }
 
-class isExistServiceStub {
+class isAvailableServiceStub {
     email(value: string): Promise<boolean> {
         if (value == 'exist@email.pl') return Promise.resolve(false);
+        return Promise.resolve(true);
+    }
+
+    name(value: string): Promise<boolean> {
+        if (value == 'exist') return Promise.resolve(false);
         return Promise.resolve(true);
     }
 }
@@ -51,8 +61,23 @@ class isExistServiceStub {
 class SyntaxServiceStub {
     public value: boolean;
 
-    password(password: string): Promise<boolean> {
+    isPassword(password: string): Promise<boolean> {
         return Promise.resolve(this.value);
+    }
+}
+
+interface User {
+    name: string,
+    email: string,
+    password: string,
+    repeatPassword: string
+}
+
+class RegisterServiceStub {
+    public returnReult: boolean;
+
+    register(user: User): Promise<boolean> {
+        return Promise.resolve(this.returnReult);
     }
 }
 
@@ -63,6 +88,7 @@ describe('Register Modal Component', () => {
     let el: HTMLElement;
     let translate: TranslateService;
 
+    let nameInput: HTMLInputElement;
     let emailInput: HTMLInputElement;
     let emailRepeatInput: HTMLInputElement;
     let passwordInput: HTMLInputElement;
@@ -72,6 +98,7 @@ describe('Register Modal Component', () => {
     let errorPasswordDiv: HTMLDivElement;
 
     let syntaxService: SyntaxServiceStub;
+    let registerService: RegisterServiceStub;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -84,14 +111,16 @@ describe('Register Modal Component', () => {
                 })
             ],
             providers: [
-                { provide: IsExistService, useClass: isExistServiceStub },
-                { provide: SyntaxService, useClass: SyntaxServiceStub }
+                { provide: IsAvailableService, useClass: isAvailableServiceStub },
+                { provide: SyntaxService, useClass: SyntaxServiceStub },
+                { provide: RegisterService, useClass: RegisterServiceStub }
             ]
         }).overrideComponent(RegisterModalComponent, {
             set: {
                 providers: [
-                    { provide: IsExistService, useClass: isExistServiceStub },
-                    { provide: SyntaxService, useClass: SyntaxServiceStub }
+                    { provide: IsAvailableService, useClass: isAvailableServiceStub },
+                    { provide: SyntaxService, useClass: SyntaxServiceStub },
+                    { provide: RegisterService, useClass: RegisterServiceStub }
                 ]
             }
         })
@@ -100,6 +129,7 @@ describe('Register Modal Component', () => {
                 fixture = TestBed.createComponent(RegisterModalComponent);
 
                 syntaxService = fixture.debugElement.injector.get(SyntaxService, SyntaxServiceStub);
+                registerService = fixture.debugElement.injector.get(RegisterService, RegisterServiceStub);
 
                 translate = TestBed.get(TranslateService);
 
@@ -107,19 +137,15 @@ describe('Register Modal Component', () => {
 
                 translate.setDefaultLang('en');
 
+                nameInput = fixture.debugElement.query(By.css('#input-name-id')).nativeElement;
+
                 emailInput = fixture.debugElement.query(By.css('#input-email-id')).nativeElement;
                 emailRepeatInput = fixture.debugElement.query(By.css('#input-repeat-email-id')).nativeElement;
 
                 passwordInput = fixture.debugElement.query(By.css('#input-password-id')).nativeElement;
                 passwordRepeatInput = fixture.debugElement.query(By.css('#input-repeat-password-id')).nativeElement;
 
-                //console.log("AfterEach Value: " + syntaxService.value);
                 syntaxService.value = true;
-
-                // syntaxService =  fixture.debugElement.injector.get(SyntaxService);
-
-                // errorEmailDiv = fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement;
-                //errorPasswordDiv = fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement;
             })
     }));
 
@@ -135,6 +161,11 @@ describe('Register Modal Component', () => {
         translate.get('Register.Header').subscribe((res: string) => {
             expect(res).toEqual('Register in NDFT Project');
         });
+    });
+
+    it('should translate email placeholder', () => {
+        fixture.detectChanges();
+        expect(nameInput.getAttribute('placeholder')).toEqual(translations.Register['Name-Placeholder']);
     });
 
     it('should translate email placeholder', () => {
@@ -156,17 +187,122 @@ describe('Register Modal Component', () => {
         fixture.detectChanges();
         expect(passwordRepeatInput.getAttribute('placeholder')).toEqual(translations.Register['Password-Repeat-Placeholder']);
     });
+    // Name Test
+    it('should dont display error and set valid style after insert John Smith', async(() => {
+        fixture.detectChanges();
 
+        fixture.whenStable().then(() => {
+            nameInput.value = 'John Smith';
+            nameInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(fixture.debugElement.query(By.css('#name-error-msg-id'))).toBeNull();
+                expect(nameInput.classList.contains('valid')).toBeTruthy();
+            })
+        });
+    }))
+
+    it('should dont display error and set valid style after insert Johnt09', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            nameInput.value = 'Johnt09';
+            nameInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(fixture.debugElement.query(By.css('#name-error-msg-id'))).toBeNull();
+                expect(nameInput.classList.contains('valid')).toBeTruthy();
+            })
+        });
+    }))
+
+    it('should dont display error and set valid style after insert 0009', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            nameInput.value = 'Johnt09';
+            nameInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(fixture.debugElement.query(By.css('#name-error-msg-id'))).toBeNull();
+                expect(nameInput.classList.contains('valid')).toBeTruthy();
+            })
+        });
+    }))
+
+    it('should display error and set invalid class after insert John Smith Solo', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            nameInput.value = 'John Smith Solo';
+            nameInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(nameInput.classList.contains('invalid')).toBeTruthy();
+                expect(fixture.debugElement.query(By.css('#name-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Name-Wrong-Syntax']);
+            })
+        });
+    }))
+
+    it('should display error and set invalid class after insert John Smith`', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            nameInput.value = 'John Smith`';
+            nameInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(nameInput.classList.contains('invalid')).toBeTruthy();
+                expect(fixture.debugElement.query(By.css('#name-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Name-Wrong-Syntax']);
+            })
+        });
+    }))
+
+    it('should display error and set invalid class after insert John Smi!th`', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            nameInput.value = 'John Smith`';
+            nameInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(nameInput.classList.contains('invalid')).toBeTruthy();
+                expect(fixture.debugElement.query(By.css('#name-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Name-Wrong-Syntax']);
+            })
+        });
+    }))
+
+    it('should display Name is already use. when name exist in database', async(() => {
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            nameInput.value = 'exist';
+            nameInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(fixture.debugElement.query(By.css('#name-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Name-Invalid-Exist-In-Database']);
+
+            })
+        });
+    }));
+    // Email Test
     it('should display Email address is already in use. when email exist in database', async(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             emailInput.value = "exist@email.pl"
-            emailInput.dispatchEvent(new Event('blur'));
+            emailInput.dispatchEvent(new Event('input'));
             fixture.detectChanges();
-            
+
             fixture.whenStable().then(() => {
                 fixture.detectChanges();
                 expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Email-Invalid-Exist-In-Database']);
+                expect(emailInput.classList.contains('invalid')).toBeTruthy();
             });
         });
     }));
@@ -175,7 +311,7 @@ describe('Register Modal Component', () => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             emailInput.value = "ex#"
-            emailInput.dispatchEvent(new Event('blur'));
+            emailInput.dispatchEvent(new Event('input'));
 
             fixture.detectChanges();
             fixture.whenStable().then(() => {
@@ -185,17 +321,41 @@ describe('Register Modal Component', () => {
         });
     }));
 
+    it('should set multiple message', async(() => {
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            emailInput.value = "ex#"
+            emailRepeatInput.value = "wrrr";
+
+            emailInput.dispatchEvent(new Event('input'));
+            emailRepeatInput.dispatchEvent(new Event('input'));
+
+            fixture.detectChanges();
+            fixture.whenStable().then(() => {
+
+                expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML)
+                    .toContain(translations.Register['Email-Wrong-Syntax']);
+                    
+                expect(fixture.debugElement.query(By.css('#email-error-msg-id')).nativeElement.innerHTML)
+                    .toContain(translations.Register['Email-Repeat-Match']);
+
+                expect(emailInput.classList.contains('invalid')).toBeTruthy();
+                expect(emailRepeatInput.classList.contains('invalid')).toBeTruthy();
+            });
+        });
+    }));
+
     it('should display Emails does not match. when email does not fit', async(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             emailInput.value = "email@email.pl"
-            emailInput.dispatchEvent(new Event('blur'));
+            emailInput.dispatchEvent(new Event('input'));
 
             fixture.detectChanges();
 
             fixture.whenStable().then(() => {
                 emailRepeatInput.value = "ex#1"
-                emailRepeatInput.dispatchEvent(new Event('keyup'));
+                emailRepeatInput.dispatchEvent(new Event('input'));
 
                 fixture.detectChanges();
                 fixture.whenStable().then(() => {
@@ -206,6 +366,7 @@ describe('Register Modal Component', () => {
             })
         });
     }));
+    // Password Test
 
     it('should display Password does not match when password and repeat password not equal', async(() => {
 
@@ -218,42 +379,61 @@ describe('Register Modal Component', () => {
             passwordRepeatInput.value = 'password123';
             // syntaxService.value = true;
 
-            passwordInput.dispatchEvent(new Event('blur'));
+            passwordInput.dispatchEvent(new Event('input'));
 
             fixture.detectChanges();
 
             fixture.whenStable().then(() => {
 
-                passwordRepeatInput.dispatchEvent(new Event('keyup'));
+                passwordRepeatInput.dispatchEvent(new Event('input'));
 
                 fixture.detectChanges();
 
                 fixture.whenStable().then(() => {
                     expect(fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement.innerHTML).toContain(translations.Register['Password-Match']);
+
+                    expect(passwordInput.classList.contains('invalid'));
                     expect(passwordRepeatInput.classList.contains('invalid'));
                 });
             });
         })
     }));
 
-    it('should display password wring syntax', async(() => {
+    it('should display password wrong syntax', async(() => {
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
-            fixture.detectChanges();
 
             syntaxService.value = false;
+            passwordInput.value = '````````````';
 
-            passwordInput.value = '`';
-
-            passwordInput.dispatchEvent(new Event('blur'));
-
-            fixture.detectChanges();
+            passwordInput.dispatchEvent(new Event('input'));
 
             fixture.whenStable().then(() => {
-                fixture.detectChanges();;
+                fixture.detectChanges();
                 expect(fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement.innerHTML)
                     .toContain(translations.Register['Password-Syntax']);
+                expect(passwordRepeatInput.classList.contains('invalid'));
+            })
+
+        })
+    }));
+
+    it('should display password wrong syntax after type pas 123', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+
+            syntaxService.value = false;
+            passwordInput.value = 'pas 123';
+
+            passwordInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement.innerHTML)
+                    .toContain(translations.Register['Password-Syntax']);
+                expect(passwordRepeatInput.classList.contains('invalid'));
             })
 
         })
@@ -268,19 +448,22 @@ describe('Register Modal Component', () => {
             passwordInput.value = '`';
 
             passwordRepeatInput.value = 'wrong';
-            passwordInput.dispatchEvent(new Event('blur'));
-            fixture.detectChanges();
+            passwordInput.dispatchEvent(new Event('input'));
 
             fixture.whenStable().then(() => {
                 fixture.detectChanges();
 
-                passwordRepeatInput.dispatchEvent(new Event('keyup'));
+                passwordRepeatInput.dispatchEvent(new Event('input'));
                 fixture.detectChanges();
 
                 fixture.whenStable().then(() => {
                     let div: HTMLDivElement = fixture.debugElement.query(By.css('#password-error-msg-id')).nativeElement;
                     expect(div.innerHTML).toContain(translations.Register['Password-Match']);
                     expect(div.innerHTML).toContain(translations.Register['Password-Syntax']);
+
+                    expect(passwordInput.classList.contains('invalid'));
+                    expect(passwordRepeatInput.classList.contains('invalid'));
+
                 });
             })
 
@@ -292,49 +475,59 @@ describe('Register Modal Component', () => {
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
-            // Password Input
 
-            syntaxService.value = true;
-            passwordInput.value = 'password123';
-
-            passwordInput.dispatchEvent(new Event('blur'));
-            passwordInput.dispatchEvent(new Event('input'));
-
-            fixture.detectChanges();
+            nameInput.value = "adminek123";
+            nameInput.dispatchEvent(new Event('input'));
 
             fixture.whenStable().then(() => {
-                // Password Repeat Email Input
-    
-                passwordRepeatInput.value = 'password123';
-                passwordRepeatInput.dispatchEvent(new Event('keyup'));
-                passwordRepeatInput.dispatchEvent(new Event('input'));
+                // Password Input
+
+                syntaxService.value = true;
+                passwordInput.value = 'password123';
+
+                passwordInput.dispatchEvent(new Event('input'));
+
                 fixture.detectChanges();
 
                 fixture.whenStable().then(() => {
-   
-                    //Email Input
-                    emailInput.value = "correct@mail.pl";
-                    emailInput.dispatchEvent(new Event('blur'));
-                    emailInput.dispatchEvent(new Event('input'));
+                    // Password Repeat Email Input
+
+                    passwordRepeatInput.value = 'password123';
+                    passwordRepeatInput.dispatchEvent(new Event('input'));
                     fixture.detectChanges();
 
                     fixture.whenStable().then(() => {
-                        //Email Repeat Input
 
-                        emailRepeatInput.value = "correct@mail.pl";
-                        emailRepeatInput.dispatchEvent(new Event('keyup'));
-                        emailRepeatInput.dispatchEvent(new Event('input'));
+                        //Email Input
+                        emailInput.value = "correct@mail.pl";
+                        emailInput.dispatchEvent(new Event('input'));
                         fixture.detectChanges();
 
                         fixture.whenStable().then(() => {
+                            //Email Repeat Input
 
-                            var registerButton: HTMLButtonElement = fixture.debugElement.query(By.css('#register-button-id')).nativeElement;
-                            expect(registerButton.disabled).toBeFalsy();
+                            emailRepeatInput.value = "correct@mail.pl";
+                            emailRepeatInput.dispatchEvent(new Event('input'));
+                            fixture.detectChanges();
+
+                            fixture.whenStable().then(() => {
+
+                                var registerButton: HTMLButtonElement = fixture.debugElement.query(By.css('#register-button-id')).nativeElement;
+                                expect(registerButton.disabled).toBeFalsy();
+
+                                expect(nameInput.classList.contains('valid'));
+
+                                expect(emailInput.classList.contains('valid'));
+                                expect(emailRepeatInput.classList.contains('valid'));
+
+                                expect(passwordInput.classList.contains('valid'));
+                                expect(passwordRepeatInput.classList.contains('valid'));
+                            });
                         });
-                    });
 
+                    });
                 });
             });
-        });
+        })
     }));
 })

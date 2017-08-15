@@ -15,10 +15,10 @@
           <div class="form-group">
             <label for="name">{{'Register.Name' | translate}}</label>
             <input ngModel #nameInput="ngModel" class="form-control" id="name" name="name" minlength="6" maxlength="64" required placeholder="{{'Register.Name-Placeholder' | translate}}"
-              id="name-id">
+              id="input-name-id" (input)="checkName()" [class.valid]="isNameComplete == true && nameMsg == ''" [class.invalid]="isNameComplete == true && nameMsg != ''">
 
-            <div class="alert alert-danger" *ngIf="emailMsg" id="email-error-msg-id">
-              {{ emailMsg }}
+            <div class="alert alert-danger" *ngIf="nameMsg" id="name-error-msg-id">
+              {{ nameMsg }}
             </div>
           </div>
           <!--Email Group -->

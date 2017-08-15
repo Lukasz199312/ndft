@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgModel, NgForm } from '@angular/forms';
-import { IsExistService } from '../../../src/is-exist.service';
+import { IsAvailableService } from '../../../src/is-available.service';
 import { SyntaxService } from '../../../src/syntax.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Syntax } from './../../../src/helpers/syntax';
@@ -13,11 +13,15 @@ import { TranslateMSG } from "../../../src/translate-msg";
     selector: 'register-modal',
     templateUrl: './register-modal.component.html',
     styleUrls: ['./register-modal.css'],
-    providers: [IsExistService, SyntaxService, RegisterService]
+    providers: [IsAvailableService, SyntaxService, RegisterService]
 })
 export class RegisterModalComponent implements OnInit {
 
     public nameMsgExist: TranslateMSG = new TranslateMSG();
+    public nameMsgSyntax: TranslateMSG = new TranslateMSG();
+
+    public nameMsg: string = '';
+    public isNameComplete: boolean = false;
 
     public emailMsgExist: TranslateMSG = new TranslateMSG();
     public emailMsgNotMatch: TranslateMSG = new TranslateMSG();
@@ -40,7 +44,10 @@ export class RegisterModalComponent implements OnInit {
     public password: string = '';
     public repeatPassword: string = '';
 
-    public te: boolean = true;
+    public valid = 'valid';
+    public resultV = true;
+
+    @ViewChild('nameInput') nameInput: NgModel;
 
     @ViewChild('emailInput') emailInput: NgModel;
     @ViewChild('emailRepeatInput') emailRepeatInput: NgModel;
@@ -48,14 +55,18 @@ export class RegisterModalComponent implements OnInit {
     @ViewChild('passwordInput') passwordInput: NgModel;
     @ViewChild('passwordRepeatInput') passwordRepeatInput: NgModel;
 
-    constructor(private isExistService: IsExistService, private translate: TranslateService,
+    constructor(private isAvailableService: IsAvailableService, private translate: TranslateService,
         private syntaxService: SyntaxService, private registerService: RegisterService) { }
     /**
      * Set in18 translate for specified language
      */
     ngOnInit(): void {
-        this.translate.get('Register.Name-invalid-Exist-In-Database').toPromise().then(res => {
+        this.translate.get('Register.Name-Invalid-Exist-In-Database').toPromise().then(res => {
             this.nameMsgExist.initialize(res + '. ');
+        });
+
+        this.translate.get('Register.Name-Wrong-Syntax').toPromise().then(res => {
+            this.nameMsgSyntax.initialize(res + '. ');
         });
 
         this.translate.get('Register.Email-Invalid-Exist-In-Database').toPromise().then(res => {
@@ -88,6 +99,29 @@ export class RegisterModalComponent implements OnInit {
     }
 
 
+    public checkName() {
+        if (this.nameInput.value == '') {
+            this.isNameComplete = false;
+
+            this.nameMsgExist.reset();
+            this.nameMsgSyntax.reset();
+
+            this.updateNameMsg();
+            return;
+        }
+
+        var syntaxResult = this.syntaxName(this.nameInput.value);
+        if(syntaxResult) {
+            this.isAvailableService.name(this.nameInput.value).then((res) => {
+                if(res) this.nameMsgExist.reset();
+                else this.nameMsgExist.set();
+
+                this.updateNameMsg();
+                this.isNameComplete = true;
+            })
+        } else this.isNameComplete = true;
+    }
+
     /**
      * 
      */
@@ -98,20 +132,21 @@ export class RegisterModalComponent implements OnInit {
                 var syntaxResult = this.syntaxEmail(this.email);
 
                 if (syntaxResult) {
-                    this.isExistService.email(this.email).then(res => {
-                        //Set error msg
-                        if (!res)
-                            this.emailMsgExist.set();
+                    this.isAvailableService.email(this.email).then(res => {
+
+                        if (res)
+                            this.emailMsgExist.reset();
 
                         else
-                            this.emailMsgExist.reset();
+                            this.emailMsgExist.set();
 
                         this.updateEmailMsg();
                     });
+                    this.isEmailComplete = true
                 }
-                this.isEmailComplete = true
+                else this.isEmailComplete = true;
+               
             }
-
         }
     }
     /**
@@ -125,6 +160,26 @@ export class RegisterModalComponent implements OnInit {
             return true;
         }
         return false;
+    }
+
+    /**
+     * check name syntax, return true if it is correct
+     * @param name 
+     */
+
+    private syntaxName(name: string): boolean {
+        var result = new Syntax().isName(name);
+        console.log(result)
+        if (result) {
+            this.nameMsgSyntax.reset();
+            this.updateNameMsg();
+            return true;
+        }
+        else {
+            this.nameMsgSyntax.set();
+            this.updateNameMsg();
+            return false;
+        }
     }
 
 
@@ -154,7 +209,6 @@ export class RegisterModalComponent implements OnInit {
      */
     public isEmailEqual() {
         this.repeatEmail = this.emailRepeatInput.value;
-        console.log(this.repeatEmail);
 
         if (this.repeatEmail == '') {
             this.emailMsgNotMatch.reset();
@@ -204,11 +258,10 @@ export class RegisterModalComponent implements OnInit {
      */
 
     public passwordSyntax() {
-        this.password = this.passwordInput.value;
+        var password = this.passwordInput.value;
         this.passwordEqual();
-
-        if (this.password != '') {
-            this.syntaxService.isPassword(this.password).then((res) => {
+        if (password != '') {
+            this.syntaxService.isPassword(password).then((res) => {
                 if (res) this.passwordMsgSyntax.reset();
                 else this.passwordMsgSyntax.set();
                 this.updatePasswordMsg();
@@ -216,11 +269,9 @@ export class RegisterModalComponent implements OnInit {
             })
         }
         else {
-            console.log('rest');
             this.passwordMsgSyntax.reset();
             this.isPasswordComplete = false;
         }
-
         this.updatePasswordMsg();
     }
 
@@ -230,7 +281,14 @@ export class RegisterModalComponent implements OnInit {
 
     private updateEmailMsg() {
         this.emailMsg = this.emailMsgSyntax.get() + this.emailMsgExist.get() + this.emailMsgNotMatch.get();
-        console.log(this.emailMsg);
+    }
+
+    /**
+     * update name message
+     */
+
+    private updateNameMsg() {
+        this.nameMsg = this.nameMsgSyntax.get() + this.nameMsgExist.get();
     }
 
     /**
