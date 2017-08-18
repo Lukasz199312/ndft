@@ -9,6 +9,19 @@ import { RegisterService } from "./register.service";
 import { NgClass } from '@angular/common';
 import { TranslateMSG } from "../../../src/translate-msg";
 
+
+import { Observable } from 'rxjs/observable';
+
+// import 'rxjs/add/operator/catch';
+// import 'rxjs/add/operator/map';
+// import 'rxjs/add/operator/toPromise';
+// import 'rxjs/add/operator/debounce';
+// import 'rxjs/add/operator/filter';
+
+import * as Rx from 'rxjs';
+import { Http } from '@angular/http';
+
+
 @Component({
     selector: 'register-modal',
     templateUrl: './register-modal.component.html',
@@ -28,6 +41,7 @@ export class RegisterModalComponent implements OnInit {
     public emailMsgNotDefined: TranslateMSG = new TranslateMSG();;
     public emailMsgSyntax: TranslateMSG = new TranslateMSG();;
 
+
     public emailMsg: string = '';
     public isEmailComplete: boolean = false;
 
@@ -37,15 +51,25 @@ export class RegisterModalComponent implements OnInit {
     public passwordMsg: string = '';
     public isPasswordComplete: boolean = false;
 
-
-
     public email: string = '';
     public repeatEmail: string = '';
     public password: string = '';
     public repeatPassword: string = '';
 
-    public valid = 'valid';
-    public resultV = true;
+    public nameValidClass: boolean = false;
+    public nameInvalidClass: boolean = false;
+
+    public emailValidClass: boolean = false;
+    public emailInvalidClass: boolean = false;
+
+    public emailRepeatValidClass: boolean = false;
+    public emailRepeatInvalidClass: boolean = false;
+
+    public passwordValidClass: boolean = false;
+    public passwordInvalidClass: boolean = false;
+
+    public passwordRepeatValidClass: boolean = false;
+    public passwordRepeatInvalidClass: boolean = false;
 
     @ViewChild('nameInput') nameInput: NgModel;
 
@@ -54,6 +78,7 @@ export class RegisterModalComponent implements OnInit {
 
     @ViewChild('passwordInput') passwordInput: NgModel;
     @ViewChild('passwordRepeatInput') passwordRepeatInput: NgModel;
+
 
     constructor(private isAvailableService: IsAvailableService, private translate: TranslateService,
         private syntaxService: SyntaxService, private registerService: RegisterService) { }
@@ -92,34 +117,74 @@ export class RegisterModalComponent implements OnInit {
         this.translate.get("Register.Password-Syntax").toPromise().then(res => {
             this.passwordMsgSyntax.initialize(res + '. ');
         });
+
+        //DELETE
+
+        var subject = new Rx.Subject();
+
+
+
+        subject.subscribe(x => {
+            console.log('val ' + x);
+        })
+
+
+        setTimeout(function () {
+            subject.next('John');
+        }, 1000);
+
+        setTimeout(function () {
+            subject.next('Smith');
+        }, 2000);
+
+        setTimeout(function () {
+            subject.next('Alste');
+        }, 2500);
+
+
+        // var stream2 = Rx.Observable.from([[110, 120, 130, 140], [50, 200, 160]]).flatMap((x, i) => {
+        //     return x;
+        // }).subscribe(x => {
+        //     console.log(x);
+        // })
+        // console.log(stream2);
     }
 
     public diagnostic(object: object): string {
         return JSON.stringify(object);
     }
 
-
     public checkName() {
+        var name = this.nameInput.value;
         if (this.nameInput.value == '') {
-            this.isNameComplete = false;
 
             this.nameMsgExist.reset();
             this.nameMsgSyntax.reset();
+
+            this.nameValidClass = false;
 
             this.updateNameMsg();
             return;
         }
 
         var syntaxResult = this.syntaxName(this.nameInput.value);
-        if(syntaxResult) {
+
+        if (syntaxResult) {
+
             this.isAvailableService.name(this.nameInput.value).then((res) => {
-                if(res) this.nameMsgExist.reset();
-                else this.nameMsgExist.set();
+                if (name != this.nameInput.value) return;
+                if (res) {
+                    this.nameMsgExist.reset();
+                    this.nameValidClass = true;
+                }
+                else {
+                    this.nameMsgExist.set();
+                    this.nameValidClass = false;
+                }
 
                 this.updateNameMsg();
-                this.isNameComplete = true;
             })
-        } else this.isNameComplete = true;
+        }
     }
 
     /**
@@ -145,7 +210,7 @@ export class RegisterModalComponent implements OnInit {
                     this.isEmailComplete = true
                 }
                 else this.isEmailComplete = true;
-               
+
             }
         }
     }
@@ -169,7 +234,6 @@ export class RegisterModalComponent implements OnInit {
 
     private syntaxName(name: string): boolean {
         var result = new Syntax().isName(name);
-        console.log(result)
         if (result) {
             this.nameMsgSyntax.reset();
             this.updateNameMsg();
@@ -281,6 +345,12 @@ export class RegisterModalComponent implements OnInit {
 
     private updateEmailMsg() {
         this.emailMsg = this.emailMsgSyntax.get() + this.emailMsgExist.get() + this.emailMsgNotMatch.get();
+
+        if (this.emailMsg == '') this.emailInvalidClass = false;
+        else this.emailInvalidClass = true;
+
+        if (this.emailMsgNotMatch.get() == '') this.emailRepeatInvalidClass = false;
+        else this.emailRepeatInvalidClass = true;
     }
 
     /**
@@ -289,6 +359,9 @@ export class RegisterModalComponent implements OnInit {
 
     private updateNameMsg() {
         this.nameMsg = this.nameMsgSyntax.get() + this.nameMsgExist.get();
+
+        if (this.nameMsg == '') this.nameInvalidClass = false;
+        else this.nameInvalidClass = true;
     }
 
     /**
@@ -297,6 +370,12 @@ export class RegisterModalComponent implements OnInit {
 
     private updatePasswordMsg() {
         this.passwordMsg = this.passwordMsgSyntax.get() + this.passwordMsgNotMatch.get();
+
+        if (this.passwordMsg == '') this.passwordInvalidClass = false;
+        else this.passwordInvalidClass = true;
+
+        if (this.passwordMsgNotMatch.get() == '') this.passwordRepeatInvalidClass = false;
+        else this.passwordRepeatInvalidClass = true;
     }
 
     /**

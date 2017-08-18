@@ -1,5 +1,4 @@
-export default{
-   {
+export default {
     "NavBar": {
         "Title": "NDFT"
     },
@@ -34,5 +33,5 @@ export default{
         "Password-Repeat-Placeholder": "Confirm password",
         "Password-Syntax": "Password length must be between 6 - 32. Allow character a-Z, 0-9 and !@#$%^&*()"
     }
-}
+
 }
