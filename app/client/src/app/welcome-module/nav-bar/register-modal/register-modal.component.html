@@ -25,7 +25,7 @@
           <div class="form-group">
             <label for="email">{{'Register.Email' | translate}}</label>
             <input ngModel #emailInput="ngModel" class="form-control" id="email" name="email" minlength="6" maxlength="64" required placeholder="{{'Register.Email-Placeholder' | translate}}"
-              id="input-email-id" (input)="checkEmail()" [ngClass]="{'invalid': emailInvalidClass}"  [class.valid]="isEmailComplete == true && emailMsg == ''">
+              id="input-email-id" (input)="checkEmail()" [ngClass]="{'invalid': emailInvalidClass, 'valid': emailValidClass}">
 
             <div class="alert alert-danger" *ngIf="emailMsg" id="email-error-msg-id">
               {{ emailMsg }}

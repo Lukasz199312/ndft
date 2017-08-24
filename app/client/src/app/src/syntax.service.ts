@@ -8,16 +8,18 @@ import { Subject } from 'rxjs/subject';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/operator/debounce';
 
 @Injectable()
 export class SyntaxService {
 
-    private passwordSubject: Subject<string>;
+    private passwordSubject: Subject<string> = new Subject();
     private passwordPromise: Promise<boolean>;
 
     constructor(private http: Http) {
         this.passwordPromise = this.passwordSubject
-            .debounceTime(250)
+            .debounceTime(500)
+            .distinctUntilChanged()
             .map(x => this.observableIsPassword(x))
             .flatMap(x => x)
             .toPromise();
