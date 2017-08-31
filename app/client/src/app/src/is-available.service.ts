@@ -18,7 +18,6 @@ export class IsAvailableService {
         // Name Value
         var nameObservable = this.nameSubject
         .debounce(() => Rx.Observable.timer(300))
-        .distinctUntilChanged()
         .map(x => this.observableName(x))
         .flatMap(x => x)
 

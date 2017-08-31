@@ -73,7 +73,6 @@ export class RegisterModalComponent implements OnInit {
     @ViewChild('passwordInput') passwordInput: NgModel;
     @ViewChild('passwordRepeatInput') passwordRepeatInput: NgModel;
 
-
     constructor(private isAvailableService: IsAvailableService, private translate: TranslateService,
         private syntaxService: SyntaxService, private registerService: RegisterService) { }
 
@@ -117,49 +116,54 @@ export class RegisterModalComponent implements OnInit {
     }
     //*****************************************************************************************************  **/
 
-    public diagnostic(object: object): string {
-        return JSON.stringify(object);
-    }
+    
+
     //*****************************************************************************************************  **/
+
     public checkName() {
-        var name = this.nameInput.value;
-        if (this.nameInput.value == '') {
+        if (this.isNameEmpty() == false) {
+            var syntaxResult = this.setNameMsgSyntax();
 
-            this.nameMsgExist.reset();
-            this.nameMsgSyntax.reset();
-
+            if (syntaxResult) {
+                this.setNameMsgExistValueAndUpdateNameMSG();
+                //Break it, to dont call updateNameMsg, it will be call in setNameMsgExistValueAndUpdateNameMSG
+                console.log("WTF");
+                return;
+            }
+        }
+        else {
             this.nameValidClass = false;
-
-            this.updateNameMsg();
-            return;
+            this.resetAllNameMSG();
         }
 
-        var syntaxResult = this.syntaxName(this.nameInput.value);
-
-        if (syntaxResult) {
-            this.isAvailableService.name(this.nameInput.value, (res => {
-                if (name != this.nameInput.value) return;
-                if (res) {
-                    this.nameMsgExist.reset();
-                    this.nameValidClass = true;
-                }
-                else {
-                    this.nameMsgExist.set();
-                    this.nameValidClass = false;
-                }
-
-                this.updateNameMsg();
-            }));
-        }
+        this.updateNameMsg();
     }
 
     /**
-    * check name syntax, return true if it is correct
+     * check whether is name empty
+     */
+
+    private isNameEmpty(): boolean {
+        if (this.nameInput.value == '') return true;
+        return false;
+    }
+
+    /**
+     * reset all name Message for Name Field
+     */
+
+    private resetAllNameMSG(): void {
+        this.nameMsgExist.reset();
+        this.nameMsgSyntax.reset();
+    }
+
+    /**
+    * check name syntax, set appropriate message and return true if it is correct
     * @param name 
     */
 
-    private syntaxName(name: string): boolean {
-        var result = new Syntax().isName(name);
+    private setNameMsgSyntax(): boolean {
+        var result = new Syntax().isName(this.nameInput.value);
         if (result) {
             this.nameMsgSyntax.reset();
             return true;
@@ -168,6 +172,26 @@ export class RegisterModalComponent implements OnInit {
             this.nameMsgSyntax.set();
             return false;
         }
+    }
+
+    /**
+     * sets or unset email message error, based on Available Service Email result
+     * @param name 
+     */
+
+    private setNameMsgExistValueAndUpdateNameMSG(): void {
+        this.isAvailableService.name(this.nameInput.value, (res => {
+            if (res) {
+                this.nameMsgExist.reset();
+                this.nameValidClass = true;
+            }
+            else {
+                this.nameMsgExist.set();
+                this.nameValidClass = false;
+            }
+
+            this.updateNameMsg();
+        }));
     }
 
     //*****************************************************************************************************  **/
@@ -179,10 +203,15 @@ export class RegisterModalComponent implements OnInit {
         var email = this.emailInput.value;
 
         if (this.isEmailEmpty() == false) {
-            this.reactToEmailEqual();
-            var result = this.reactToEmailCorrectStatus(email)
-            //Break it, to dont call updateEmailMsg, it will be call in reactToEmailCorrectStatus
-            if (result) return;
+            this.setNotMatchMessage();
+
+            var result = this.setMessageSyntax(email)
+
+            if (result) {
+                this.setEmailMsgExistValueAndUpdateEmailMSG(email);
+                //Break it, to dont call updateEmailMsg, it will be call in setMsgExistValueAndUpdateEmailMSG
+                return;
+            }
         }
         else {
             this.resetEmailMsg();
@@ -206,7 +235,7 @@ export class RegisterModalComponent implements OnInit {
      * when email and repeat email are equal then reset emailMsgNotMatch message, otherwise it sets 
      */
 
-    private reactToEmailEqual(): void {
+    private setNotMatchMessage(): void {
         if (this.isEmailEqual()) {
             this.emailMsgNotMatch.reset();
         }
@@ -235,14 +264,13 @@ export class RegisterModalComponent implements OnInit {
     }
 
     /**
-     * sets or unset email message error based on syntax result and reactToEmailAvailable()
+     * sets or unset email message error based on syntax result
      * @param email 
      */
 
-    private reactToEmailCorrectStatus(email: string): boolean {
+    private setMessageSyntax(email: string): boolean {
         if (this.checkSyntaxEmail(email)) {
             this.emailMsgSyntax.reset();
-            this.reactToEmailAvailable(email);
             return true;
         }
         else {
@@ -269,7 +297,7 @@ export class RegisterModalComponent implements OnInit {
      * @param name 
      */
 
-    private reactToEmailAvailable(name: string) {
+    private setEmailMsgExistValueAndUpdateEmailMSG(name: string) {
         this.isAvailableService.email(name, res => {
             if (res) {
                 this.emailMsgExist.reset();
@@ -314,6 +342,26 @@ export class RegisterModalComponent implements OnInit {
 
         if (this.emailMsgNotMatch.get() == '') this.emailRepeatInvalidClass = false;
         else this.emailRepeatInvalidClass = true;
+    }
+
+    //*****************************************************************************************************  **/
+
+    public checkRepeatEmail() {
+        if(this.isEmailEqualToRepeatEmail() == false) {
+            this.emailMsgNotMatch.set();
+            this.emailRepeatValidClass = true;
+        }
+        else {
+            this.emailMsgNotMatch.reset();
+            this.emailRepeatValidClass = false;
+        }
+
+        this.updateEmailMsg();
+    }
+
+    private isEmailEqualToRepeatEmail() {
+        if(this.emailInput.value == this.emailRepeatInput.value) return true;
+        else return false;
     }
 
     //*****************************************************************************************************  **/
@@ -433,4 +481,3 @@ export class RegisterModalComponent implements OnInit {
     }
 
 }
-

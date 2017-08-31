@@ -15,7 +15,7 @@
           <div class="form-group">
             <label for="name">{{'Register.Name' | translate}}</label>
             <input ngModel #nameInput="ngModel" class="form-control" id="name" name="name" minlength="6" maxlength="64" required placeholder="{{'Register.Name-Placeholder' | translate}}"
-              id="input-name-id" (input)="checkName()" [ngClass]="{'invalid': nameInvalidClass, 'valid': nameValidClass}" >
+              id="input-name-id" (input)="checkName()" [ngClass]="{'invalid': nameInvalidClass, 'valid': nameValidClass}">
 
             <div class="alert alert-danger" *ngIf="nameMsg" id="name-error-msg-id">
               {{ nameMsg }}
@@ -36,15 +36,14 @@
             <label for="emailRepeat">{{'Register.Email-Repeat' | translate}}</label>
             <input ngModel #emailRepeatInput="ngModel" ngModel class="form-control" id="emailRepeat" name="emailRepeat" required minlength="6"
               maxlength="64" Repeat.value placeholder="{{'Register.Email-Repeat-Placeholder' | translate}}" id="input-repeat-email-id"
-              (input)="isEmailEqual()" [class.valid]="emailMsgNotMatch.get() == '' && emailInput.value!='' && emailRepeatInput.value != ''"
-              [ngClass] = "{ 'invalid': emailRepeatInvalidClass }">
+              (input)="checkRepeatEmail()" [ngClass]="{ 'invalid': emailRepeatInvalidClass, 'valid': emailRepeatValidClass }">
           </div>
           <!-- Password Group -->
           <div class="form-group">
             <label for="registerPassword">{{'Register.Password' | translate}}</label>
             <input #passwordInput='ngModel' ngModel class="form-control" type="password" id="registerPassword" name="registerPassword"
               required minlength="6" maxlength="32" placeholder="{{'Register.Password-Placeholder' | translate}}" (input)='passwordSyntax()'
-              id="input-password-id" [class.valid]="passwordMsg == ''&& passwordInput.value != '' && isPasswordComplete " [ngClass]="{'invalid': passwordInvalidClass}" >
+              id="input-password-id" [class.valid]="passwordMsg == ''&& passwordInput.value != '' && isPasswordComplete " [ngClass]="{'invalid': passwordInvalidClass}">
           </div>
           <div class="alert alert-danger" *ngIf="passwordMsg" id="password-error-msg-id">
             {{ passwordMsg }}
@@ -54,7 +53,7 @@
             <label for="registerPasswordRepeat">{{'Register.Password-Repeat' | translate}}</label>
             <input #passwordRepeatInput='ngModel' ngModel class="form-control" type="password" id="registerPasswordRepeat" name="registerPasswordRepeat"
               required minlength="6" maxlength="32" required placeholder="{{'Register.Password-Repeat-Placeholder' | translate}}"
-              (input)='passwordEqual()' id="input-repeat-password-id" [ngClass] = "{'invalid': passwordRepeatInvalidClass}" [class.valid]="passwordMsgNotMatch.get() == '' && passwordRepeatInput.value != ''">
+              (input)='passwordEqual()' id="input-repeat-password-id" [ngClass]="{'invalid': passwordRepeatInvalidClass}" [class.valid]="passwordMsgNotMatch.get() == '' && passwordRepeatInput.value != ''">
           </div>
         </form>
       </div>
@@ -69,3 +68,4 @@
     </div>
   </div>
 </div>
+
