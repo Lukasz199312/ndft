@@ -1,14 +1,14 @@
-import { Field } from "../field";
+import { ElementComponent } from "../element-component";
 import { I_ValueBox } from "../i-value-box";
-import { FieldRoot } from "../field-root";
+import { ElementRoot } from "../element-root";
 import { I_MessengerObserver } from "../../messenger/i-messenger-observer";
 
-export abstract class FieldRule<T extends I_ValueBox> extends FieldRoot<T> {
-    protected field: FieldRoot<T>;
+export abstract class FieldRule<T extends I_ValueBox> extends ElementRoot<T> {
+    protected field: ElementRoot<T>;
     protected message: string;
-    protected root: Field<T>;
+    protected root: ElementComponent<T>;
 
-    constructor(field: FieldRoot<T>, root: Field<T>, message: string) {
+    constructor(field: ElementRoot<T>, root: ElementComponent<T>, message: string) {
         super();
         this.field = field;
         this.root = root;

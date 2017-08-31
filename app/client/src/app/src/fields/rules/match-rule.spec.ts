@@ -1,11 +1,11 @@
 
 import { I_ValueBox } from "../i-value-box";
-import { Field } from "../field";
-import { FieldRoot } from "../field-root";
+import { ElementComponent } from "../element-component";
+import { ElementRoot } from "../element-root";
 import { MatchRule } from "./match-rule";
-import { FieldRule } from "./field-rule";
+import { FieldRule } from "./element-rule";
 
-class MockField<T extends I_ValueBox> extends Field<T> {
+class MockField<T extends I_ValueBox> extends ElementComponent<T> {
 
     public onError: (value: T) => void;
     public onPositive: (value: T) => void;
@@ -19,7 +19,7 @@ class MockField<T extends I_ValueBox> extends Field<T> {
 
 }
 
-class MockRuleField<T extends I_ValueBox> extends FieldRule<T> {
+class MockRule<T extends I_ValueBox> extends FieldRule<T> {
     public check(value: T, message?: string) {
         if(value.value == null) return;
         this.root.check(value);
@@ -28,14 +28,14 @@ class MockRuleField<T extends I_ValueBox> extends FieldRule<T> {
 }
 
 var rootfield: MockField<I_ValueBox>;
-var field: FieldRoot<I_ValueBox>;3
-var matchField: FieldRoot<I_ValueBox>;
+var field: ElementRoot<I_ValueBox>;3
+var matchField: ElementRoot<I_ValueBox>;
 
-describe('match rule', () => {
+fdescribe('match rule', () => {
 
     beforeEach(() => {
         rootfield = new MockField();
-        field = new MockRuleField(rootfield, rootfield,'field rule error');
+        field = new MockRule(rootfield, rootfield,'field rule error');
         matchField = new MatchRule(field, rootfield, 'values does not match');
     });
 

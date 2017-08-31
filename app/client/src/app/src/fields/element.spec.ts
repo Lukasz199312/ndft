@@ -1,10 +1,10 @@
 import { I_ValueBox } from "./i-value-box";
-import { Field } from "./field";
+import { ElementComponent } from "./element-component";
 import { MatchRule } from "./rules/match-rule";
-import { FieldRoot } from "./field-root";
+import { ElementRoot } from "./element-root";
 import { MessengerSubject } from "../messenger/messenger-subject";
 
-class MockField<T extends I_ValueBox> extends Field<T> {
+class MockField<T extends I_ValueBox> extends ElementComponent<T> {
 
     public onError: (value: T) => void;
     public onPositive: (value: T) => void;
@@ -21,9 +21,9 @@ class MockField<T extends I_ValueBox> extends Field<T> {
 var messenger: MessengerSubject;
 var rootField: MockField<I_ValueBox>;
 var matchMessage: string = 'Match does not match';
-var field: FieldRoot<I_ValueBox>
+var field: ElementRoot<I_ValueBox>
 
-describe('Field', () => {
+fdescribe('Field', () => {
     beforeAll(() => {
         messenger = new MessengerSubject();
         rootField = new MockField();
