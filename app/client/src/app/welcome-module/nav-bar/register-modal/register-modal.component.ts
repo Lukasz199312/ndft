@@ -14,6 +14,7 @@ import { Observable } from 'rxjs/observable';
 
 import * as Rx from 'rxjs';
 import { Http } from '@angular/http';
+import { FieldRuleDirective } from "../../../directives/attribute-directive/field-rule-directive";
 
 
 @Component({
@@ -23,6 +24,7 @@ import { Http } from '@angular/http';
     providers: [IsAvailableService, SyntaxService, RegisterService]
 })
 export class RegisterModalComponent implements OnInit {
+    
 
     public nameMsgExist: TranslateMSG = new TranslateMSG();
     public nameMsgSyntax: TranslateMSG = new TranslateMSG();

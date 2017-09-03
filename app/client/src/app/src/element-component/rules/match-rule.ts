@@ -11,7 +11,7 @@ export class MatchRule<T extends I_ValueBox> extends FieldRule<T> {
 
     private whenMatchCallNext(value: T): boolean {
         if (value.value == value.optional) {
-            this.field.check(value)
+            this.element.check(value)
             return true;
         }
         else return false;

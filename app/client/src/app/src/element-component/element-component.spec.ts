@@ -3,6 +3,7 @@ import { ElementComponent } from "./element-component";
 import { MatchRule } from "./rules/match-rule";
 import { ElementRoot } from "./element-root";
 import { MessengerSubject } from "../messenger/messenger-subject";
+import { FieldRule } from "./rules/element-rule";
 
 class MockField<T extends I_ValueBox> extends ElementComponent<T> {
 
@@ -13,17 +14,44 @@ class MockField<T extends I_ValueBox> extends ElementComponent<T> {
         this.setMessage(message);
     }
     public confirm(value: T) {
-        
+
     }
 
 }
 
-var messenger: MessengerSubject;
-var rootField: MockField<I_ValueBox>;
-var matchMessage: string = 'Match does not match';
-var field: ElementRoot<I_ValueBox>
+class MockRule<T extends I_ValueBox> extends FieldRule<T> {
+    public check(value: T) {
+        if (value.value != null) {
+            this.element.check(value)
+            return;
+        }
 
-fdescribe('Field', () => {
+        this.callRootRuleError(value)
+    }
+
+}
+
+class MockRuleCallInterruptOnly<T extends I_ValueBox> extends FieldRule<T> {
+    public check(value: T) {
+        this.callRootRuleError(value)
+    }
+
+}
+
+function AsyncReturnMessage(message: string, time: number): Promise<string> {
+    return new Promise(res => {
+        setTimeout(function () {
+            res(message);
+        }, time);
+    })
+}
+
+fdescribe('Element component', () => {
+    var messenger: MessengerSubject;
+    var rootField: MockField<I_ValueBox>;
+    var matchMessage: string = 'Match does not match';
+    var field: ElementRoot<I_ValueBox>
+
     beforeAll(() => {
         messenger = new MessengerSubject();
         rootField = new MockField();
