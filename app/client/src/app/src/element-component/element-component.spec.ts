@@ -3,7 +3,7 @@ import { ElementComponent } from "./element-component";
 import { MatchRule } from "./rules/match-rule";
 import { ElementRoot } from "./element-root";
 import { MessengerSubject } from "../messenger/messenger-subject";
-import { FieldRule } from "./rules/element-rule";
+import { FieldRule } from "./rules/field-rule";
 
 class MockField<T extends I_ValueBox> extends ElementComponent<T> {
 
@@ -46,7 +46,7 @@ function AsyncReturnMessage(message: string, time: number): Promise<string> {
     })
 }
 
-fdescribe('Element component', () => {
+describe('Element component', () => {
     var messenger: MessengerSubject;
     var rootField: MockField<I_ValueBox>;
     var matchMessage: string = 'Match does not match';

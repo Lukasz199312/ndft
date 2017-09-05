@@ -8,7 +8,7 @@ export abstract class FieldRule<T extends I_ValueBox> extends ElementRoot<T> {
     protected message: string;
     protected root: ElementComponent<T>;
 
-    constructor(element: ElementRoot<T>, root: ElementComponent<T>, message: string, asyncMessage?: Promise<string>) {
+    constructor(element: ElementRoot<T>, root: ElementComponent<T>, message: string, asyncMessage?: Promise<string>, optionalParametrRequire = true) {
         super();
         this.element = element;
         this.root = root;

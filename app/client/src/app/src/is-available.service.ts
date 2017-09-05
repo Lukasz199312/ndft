@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 
 import * as Rx from 'rxjs';
+import { I_RuleService } from "./element-component/rules/i-rule-service";
 
 
 @Injectable()
-export class IsAvailableService {
+export class IsAvailableService implements I_RuleService{
     //name
     private nameSubject: Rx.Subject<any> = new Rx.Subject();
     private callbackName: (value: boolean) => void
@@ -84,6 +85,14 @@ export class IsAvailableService {
                 return body.isAvailable;
             })
             .catch(err => { throw err })
+    }
+
+    shellMethod(value: string, method: "name" | "email", callback: (res: boolean) => void) {
+        switch(method) {
+            case "name":
+            this.name(value, callback);
+            break;
+        }
     }
 
 }

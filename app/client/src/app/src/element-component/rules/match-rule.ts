@@ -1,5 +1,5 @@
 import { I_ValueBox } from "../i-value-box";
-import { FieldRule } from "./element-rule";
+import { FieldRule } from "./field-rule";
 import { ElementComponent } from "../element-component";
 
 export class MatchRule<T extends I_ValueBox> extends FieldRule<T> {

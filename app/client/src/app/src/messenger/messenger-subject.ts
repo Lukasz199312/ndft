@@ -2,7 +2,7 @@ import { I_MessengerObserver } from "./i-messenger-observer";
 
 export class MessengerSubject {
     private observers: I_MessengerObserver[] = [];
-
+    
     public add(observer: I_MessengerObserver) {
         this.observers.push(observer);
     }

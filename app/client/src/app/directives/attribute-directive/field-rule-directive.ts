@@ -1,7 +1,7 @@
 import { Directive, Input, ElementRef, HostListener } from '@angular/core';
 import { ElementComponent } from "../../src/element-component/element-component";
 import { I_ValueBox } from "../../src/element-component/i-value-box";
-import { FieldRule } from "../../src/element-component/rules/element-rule";
+import { FieldRule } from "../../src/element-component/rules/field-rule";
 
 @Directive({
     selector: '[field-rule-directive]',

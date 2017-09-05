@@ -7,9 +7,19 @@ export class FieldRegisterElement<T extends I_ValueBox> extends ElementComponent
 
     public interrupt(value: T, message?: string) {
         this.setMessage(message);
+        this.interruptCallback();
     }
     public confirm(value: T) {
+        this.setMessage('');
         this.confirmCallback(value);
+    }
+
+    public setInterrupt(callback:() => void) {
+        this.interruptCallback = callback;
+    }
+
+    public setConfirm(callback:(value:T) => void) {
+        this.confirmCallback = callback;
     }
 
 }

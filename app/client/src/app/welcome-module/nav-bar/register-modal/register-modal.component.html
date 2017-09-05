@@ -17,8 +17,8 @@
             <input ngModel #nameInput="ngModel" class="form-control" id="name" name="name" minlength="6" maxlength="64" required placeholder="{{'Register.Name-Placeholder' | translate}}"
               id="input-name-id" (input)="checkName()" [ngClass]="{'invalid': nameInvalidClass, 'valid': nameValidClass}">
 
-            <div class="alert alert-danger" *ngIf="nameMsg" id="name-error-msg-id">
-              {{ nameMsg }}
+            <div class="alert alert-danger" *ngIf="nameMessenger.getMessage()" id="name-error-msg-id">
+              {{ nameMessenger.getMessage() }}
             </div>
           </div>
           <!--Email Group -->

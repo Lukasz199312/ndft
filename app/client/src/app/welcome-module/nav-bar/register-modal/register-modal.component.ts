@@ -15,6 +15,13 @@ import { Observable } from 'rxjs/observable';
 import * as Rx from 'rxjs';
 import { Http } from '@angular/http';
 import { FieldRuleDirective } from "../../../directives/attribute-directive/field-rule-directive";
+import { FieldRegisterElement } from "../../../src/element-component/field-register-element";
+import { I_ValueBox } from "../../../src/element-component/i-value-box";
+import { ElementComponent } from "../../../src/element-component/element-component";
+import { OutSideFunction } from "../../../src/element-component/rules/outside-fuction-rule";
+import { ElementRoot } from "../../../src/element-component/element-root";
+import { MessengerSubject } from "../../../src/messenger/messenger-subject";
+import { FieldRuleService } from "../../../src/element-component/rules/field-rule-service";
 
 
 @Component({
@@ -24,7 +31,7 @@ import { FieldRuleDirective } from "../../../directives/attribute-directive/fiel
     providers: [IsAvailableService, SyntaxService, RegisterService]
 })
 export class RegisterModalComponent implements OnInit {
-    
+
 
     public nameMsgExist: TranslateMSG = new TranslateMSG();
     public nameMsgSyntax: TranslateMSG = new TranslateMSG();
@@ -67,6 +74,9 @@ export class RegisterModalComponent implements OnInit {
     public passwordRepeatValidClass: boolean = false;
     public passwordRepeatInvalidClass: boolean = false;
 
+    public nameElement: ElementRoot<I_ValueBox>;
+    public nameMessenger: MessengerSubject;
+
     @ViewChild('nameInput') nameInput: NgModel;
 
     @ViewChild('emailInput') emailInput: NgModel;
@@ -84,6 +94,25 @@ export class RegisterModalComponent implements OnInit {
      */
 
     ngOnInit(): void {
+
+        var root: FieldRegisterElement<I_ValueBox> = new FieldRegisterElement();
+        this.nameElement = new FieldRuleService(root, root, '', this.translate.get('Register.Name-Invalid-Exist-In-Database').toPromise())
+            .set(this.isAvailableService, 'name');
+        this.nameElement = new OutSideFunction(this.nameElement, root, '', this.translate.get('Register.Name-Wrong-Syntax').toPromise()).set(new Syntax().isName);
+        //this.nameElement = new EmptyRule()
+
+        root.setConfirm(value => {
+            console.log(this.nameMessenger.getMessage());
+        });
+
+        root.setInterrupt(() => {
+            console.log('istnieje w bazie');
+            console.log(this.nameMessenger.getMessage());
+        });
+
+        this.nameMessenger = new MessengerSubject();
+        this.nameMessenger.add(root);
+
         this.translate.get('Register.Name-Invalid-Exist-In-Database').toPromise().then(res => {
             this.nameMsgExist.initialize(res + '. ');
         });
@@ -118,27 +147,29 @@ export class RegisterModalComponent implements OnInit {
     }
     //*****************************************************************************************************  **/
 
-    
+
 
     //*****************************************************************************************************  **/
 
     public checkName() {
-        if (this.isNameEmpty() == false) {
-            var syntaxResult = this.setNameMsgSyntax();
+        // if (this.isNameEmpty() == false) {
+        //     var syntaxResult = this.setNameMsgSyntax();
 
-            if (syntaxResult) {
-                this.setNameMsgExistValueAndUpdateNameMSG();
-                //Break it, to dont call updateNameMsg, it will be call in setNameMsgExistValueAndUpdateNameMSG
-                console.log("WTF");
-                return;
-            }
-        }
-        else {
-            this.nameValidClass = false;
-            this.resetAllNameMSG();
-        }
+        //     if (syntaxResult) {
+        //         this.setNameMsgExistValueAndUpdateNameMSG();
+        //         //Break it, to dont call updateNameMsg, it will be call in setNameMsgExistValueAndUpdateNameMSG
+        //         console.log("WTF");
+        //         return;
+        //     }
+        // }
+        // else {
+        //     this.nameValidClass = false;
+        //     this.resetAllNameMSG();
+        // }
 
-        this.updateNameMsg();
+        // this.updateNameMsg();
+        if(this.nameInput.value != '')
+        this.nameElement.check({ value: this.nameInput.value });
     }
 
     /**
@@ -349,7 +380,7 @@ export class RegisterModalComponent implements OnInit {
     //*****************************************************************************************************  **/
 
     public checkRepeatEmail() {
-        if(this.isEmailEqualToRepeatEmail() == false) {
+        if (this.isEmailEqualToRepeatEmail() == false) {
             this.emailMsgNotMatch.set();
             this.emailRepeatValidClass = true;
         }
@@ -362,7 +393,7 @@ export class RegisterModalComponent implements OnInit {
     }
 
     private isEmailEqualToRepeatEmail() {
-        if(this.emailInput.value == this.emailRepeatInput.value) return true;
+        if (this.emailInput.value == this.emailRepeatInput.value) return true;
         else return false;
     }
 

@@ -3,7 +3,7 @@ import { I_ValueBox } from "../i-value-box";
 import { ElementComponent } from "../element-component";
 import { ElementRoot } from "../element-root";
 import { MatchRule } from "./match-rule";
-import { FieldRule } from "./element-rule";
+import { FieldRule } from "./field-rule";
 
 class MockField<T extends I_ValueBox> extends ElementComponent<T> {
 
@@ -31,7 +31,7 @@ var rootfield: MockField<I_ValueBox>;
 var field: ElementRoot<I_ValueBox>;3
 var matchField: ElementRoot<I_ValueBox>;
 
-fdescribe('match rule', () => {
+describe('match rule', () => {
 
     beforeEach(() => {
         rootfield = new MockField();
