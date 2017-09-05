@@ -13,7 +13,9 @@ export abstract class FieldRule<T extends I_ValueBox> extends ElementRoot<T> {
         this.element = element;
         this.root = root;
 
-        this.ThrowErrorMissingOneParametr(message, asyncMessage);
+        if(optionalParametrRequire)
+            this.ThrowErrorMissingOneParametr(message, asyncMessage);
+        else message = '';
 
         if (asyncMessage == undefined) this.message = message;
         else this.setAsyncMessage(asyncMessage);

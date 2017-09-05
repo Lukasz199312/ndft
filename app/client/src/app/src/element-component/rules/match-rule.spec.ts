@@ -28,7 +28,7 @@ class MockRule<T extends I_ValueBox> extends FieldRule<T> {
 }
 
 var rootfield: MockField<I_ValueBox>;
-var field: ElementRoot<I_ValueBox>;3
+var field: ElementRoot<I_ValueBox>;
 var matchField: ElementRoot<I_ValueBox>;
 
 describe('match rule', () => {
@@ -38,21 +38,6 @@ describe('match rule', () => {
         field = new MockRule(rootfield, rootfield,'field rule error');
         matchField = new MatchRule(field, rootfield, 'values does not match');
     });
-
-    it('should throw error when none optional parametrs it was not set', () => {
-        expect(() => {
-            new MatchRule(null,null,null);
-        }).toThrowError('message or asyncMessage must be defined');
-
-        expect(() => {
-            new MatchRule(null,null, '');
-        }).toThrowError('message or asyncMessage must be defined');
-
-        expect(() => {
-            new MatchRule(null,null, '', Promise.resolve('test string'));
-        }).not.toThrowError('message or asyncMessage must be defined');
-        
-    })
 
     it('should call confirm when parametrs match', () => {
         spyOn(rootfield, 'interrupt').and.callThrough();

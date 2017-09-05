@@ -81,7 +81,7 @@ class RegisterServiceStub {
     }
 }
 
-describe('Register Modal Component', () => {
+xdescribe('Register Modal Component', () => {
     let comp: RegisterModalComponent;
     let fixture: ComponentFixture<RegisterModalComponent>;
     let de: DebugElement;

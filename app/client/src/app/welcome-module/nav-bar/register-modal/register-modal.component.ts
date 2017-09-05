@@ -22,6 +22,8 @@ import { OutSideFunction } from "../../../src/element-component/rules/outside-fu
 import { ElementRoot } from "../../../src/element-component/element-root";
 import { MessengerSubject } from "../../../src/messenger/messenger-subject";
 import { FieldRuleService } from "../../../src/element-component/rules/field-rule-service";
+import { EmptyRule } from "../../../src/element-component/rules/empty-rule";
+import { FactoryFieldRules } from "../../../src/element-component/factory-field-rules/factory-field-rules";
 
 
 @Component({
@@ -95,23 +97,22 @@ export class RegisterModalComponent implements OnInit {
 
     ngOnInit(): void {
 
-        var root: FieldRegisterElement<I_ValueBox> = new FieldRegisterElement();
-        this.nameElement = new FieldRuleService(root, root, '', this.translate.get('Register.Name-Invalid-Exist-In-Database').toPromise())
-            .set(this.isAvailableService, 'name');
-        this.nameElement = new OutSideFunction(this.nameElement, root, '', this.translate.get('Register.Name-Wrong-Syntax').toPromise()).set(new Syntax().isName);
-        //this.nameElement = new EmptyRule()
+        var factoryFieldRules = new FactoryFieldRules();
+        var result = factoryFieldRules.getName(this.isAvailableService, this.translate);
 
-        root.setConfirm(value => {
+        result.root.setConfirm(value => {
             console.log(this.nameMessenger.getMessage());
         });
 
-        root.setInterrupt(() => {
+        result.root.setInterrupt(() => {
             console.log('istnieje w bazie');
             console.log(this.nameMessenger.getMessage());
         });
 
+        this.nameElement = result.element;
+
         this.nameMessenger = new MessengerSubject();
-        this.nameMessenger.add(root);
+        this.nameMessenger.add(result.root);
 
         this.translate.get('Register.Name-Invalid-Exist-In-Database').toPromise().then(res => {
             this.nameMsgExist.initialize(res + '. ');
@@ -152,23 +153,6 @@ export class RegisterModalComponent implements OnInit {
     //*****************************************************************************************************  **/
 
     public checkName() {
-        // if (this.isNameEmpty() == false) {
-        //     var syntaxResult = this.setNameMsgSyntax();
-
-        //     if (syntaxResult) {
-        //         this.setNameMsgExistValueAndUpdateNameMSG();
-        //         //Break it, to dont call updateNameMsg, it will be call in setNameMsgExistValueAndUpdateNameMSG
-        //         console.log("WTF");
-        //         return;
-        //     }
-        // }
-        // else {
-        //     this.nameValidClass = false;
-        //     this.resetAllNameMSG();
-        // }
-
-        // this.updateNameMsg();
-        if(this.nameInput.value != '')
         this.nameElement.check({ value: this.nameInput.value });
     }
 
