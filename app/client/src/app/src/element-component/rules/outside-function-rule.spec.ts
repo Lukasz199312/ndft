@@ -27,7 +27,7 @@ class MockField<T extends I_ValueBox> extends ElementComponent<T> {
     class MockRule<T extends I_ValueBox> extends FieldRule<T> {
         public check(value: T) {
             if(value.value == null) return;
-            this.root.check(value);
+            this.element.check(value);
         }
     
     }

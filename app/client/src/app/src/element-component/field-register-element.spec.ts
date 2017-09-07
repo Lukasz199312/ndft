@@ -1,9 +1,9 @@
-import { I_ValueBox } from "../i-value-box";
-import { FieldRule } from "./field-rule";
-import { ElementComponent } from "../element-component";
-import { FieldRuleService } from "./field-rule-service";
-import { I_RuleService } from "./i-rule-service";
-import { MessengerSubject } from "../../messenger/messenger-subject";
+import { I_ValueBox } from "./i-value-box";
+import { ElementComponent } from "./element-component";
+import { FieldRule } from "./rules/field-rule";
+import { I_RuleService } from "./rules/i-rule-service";
+import { FieldRuleService } from "./rules/field-rule-service";
+import { MessengerSubject } from "../messenger/messenger-subject";
 
 class MockClass {
     public mockFunction(value: string): boolean {
@@ -82,43 +82,41 @@ var msg = {
     third: 'this is third message'
 }
 
-describe('field rule service', () => {
+
+fdescribe('field rule service synchronization', () => {
     var root: ElementComponent<I_ValueBox>
     var element: FieldRule<I_ValueBox>;
-    var mockService: MockService;
+    var elementService: FieldRuleService<I_ValueBox>;
+    var mockServiceTimeout: MockServiceTimeout;
+    var messengerSubject: MessengerSubject;
 
     beforeAll(() => {
-        mockService = new MockService();
+        mockServiceTimeout = new MockServiceTimeout();
+        messengerSubject = new MessengerSubject();
 
         root = new MockField();
-        element = new MockRule(root, root, msg.first);
-        element = new FieldRuleService(element, root, msg.second).set(mockService, 'confirm');
+        elementService = new FieldRuleService(root, root, msg.second).set(mockServiceTimeout, 'confirm');
+        element = new MockRule(elementService, root, msg.first);
+
+        messengerSubject.add(root);
     });
 
-    it('should call mockservice method through service', () => {
-        spyOn(mockService, 'shellMethod').and.callThrough();
-        spyOn(root, 'interrupt');
-        spyOn(root, 'confirm')
-
-        element.check({ value: 'Jasmine' });
-
-        expect(mockService.shellMethod).toHaveBeenCalled();
-        expect(root.interrupt).not.toHaveBeenCalled();
-        expect(root.confirm).toHaveBeenCalled();
+    it('should interrup mock field element', () => {
+        element.check({ value: null });
+        expect(messengerSubject.getMessage()).not.toBe('');
     })
 
+    it('should desynchronization rules dont set error message after rule fail', (done) => {
+        expect(messengerSubject.getMessage()).not.toBe('');
 
-    it('should call mockservice method through service', () => {
-        spyOn(mockService, 'shellMethod').and.callThrough();
-        spyOn(root, 'interrupt');
-        spyOn(root, 'confirm')
+        mockServiceTimeout.done = done;
+        mockServiceTimeout.callback = (done) => {
+            expect(messengerSubject.getMessage()).toBe('');
+            done();
+        }
+        element.check({ value: 'Jasmine' });
+        element.check({ value: null });
+    })
 
-        var interupt = new FieldRuleService(element, root, msg.second).set(mockService, 'reject');
-        interupt.check({ value: 'Jasmine' });
-
-        expect(mockService.shellMethod).toHaveBeenCalled();
-        expect(root.interrupt).toHaveBeenCalled();
-        expect(root.confirm).not.toHaveBeenCalled();
-    });
 
 });
