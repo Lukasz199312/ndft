@@ -54,7 +54,7 @@ export class ClientPage {
   }
 
   getCloseButton() {
-    return element(by.className('btn-warning'));
+    return element(by.id('btnClose'));
   }
 
   getRegisterButton() {

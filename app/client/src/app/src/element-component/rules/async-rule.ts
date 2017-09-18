@@ -8,11 +8,10 @@ export class AsyncRule<T extends I_ValueBoxAsync> extends FieldRule<T> {
 
     public check(value: T) {
         var root = this.castRootElement();
-
         root.increaseCallID();
         value.callID = root.getCallID();
 
-        this.check(value);
+        this.element.check(value);
     }
 
     private castRootElement(): FieldRegisterElementAsync<T> {

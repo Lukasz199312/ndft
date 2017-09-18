@@ -18,8 +18,11 @@
           <login-form></login-form>
         </ul>
       </li>
-      <li><a href="#myModal" data-toggle="modal" data-target="#registerModal" id='register-link-id'><span class="glyphicon glyphicon-user"></span> {{'Register.Register' | translate}}</a></li>
+      <li><a rfr-directive #rfr=rfr-directive href="#myModal" data-toggle="modal" data-target="#registerModal" id='register-link-id'><span class="glyphicon glyphicon-user"></span> {{'Register.Register' | translate}}</a></li>
     </ul>
   </div>
 </nav>
-<register-modal></register-modal>
+<register-modal #rm></register-modal>
+
+{{parse(rm)}}
+

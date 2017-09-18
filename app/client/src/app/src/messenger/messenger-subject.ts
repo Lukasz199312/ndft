@@ -1,7 +1,10 @@
 import { I_MessengerObserver } from "./i-messenger-observer";
 
 export class MessengerSubject {
+    public msg: string = '';
     private observers: I_MessengerObserver[] = [];
+    private selector: string = '';
+
     
     public add(observer: I_MessengerObserver) {
         this.observers.push(observer);
@@ -16,9 +19,21 @@ export class MessengerSubject {
     public getMessage(): string {
         var result: string = ''
         this.observers.forEach(el => {
-            result += el.getMessage();
+            if(el.getMessage() != '')
+              result += el.getMessage() + this.selector;
         });
-
         return result;
+    }
+
+    public update() {
+        this.msg = this.getMessage();
+    }
+
+    public setSelecter(selector: string) {
+        this.selector = selector;
+    }
+
+    public reset() {
+        this.msg = '';
     }
 }

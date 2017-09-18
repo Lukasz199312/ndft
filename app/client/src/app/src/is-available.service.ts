@@ -6,7 +6,7 @@ import { I_RuleService } from "./element-component/rules/i-rule-service";
 
 
 @Injectable()
-export class IsAvailableService implements I_RuleService{
+export class IsAvailableService implements I_RuleService {
     //name
     private nameSubject: Rx.Subject<any> = new Rx.Subject();
     private callbackName: (value: boolean) => void
@@ -18,21 +18,21 @@ export class IsAvailableService implements I_RuleService{
     constructor(private http: Http) {
         // Name Value
         var nameObservable = this.nameSubject
-        .debounce(() => Rx.Observable.timer(300))
-        .map(x => this.observableName(x))
-        .flatMap(x => x)
+            .debounce(() => Rx.Observable.timer(200))
+            .map(x => this.observableName(x))
+            .flatMap(x => x)
 
-        nameObservable.subscribe( value => {
+        nameObservable.subscribe(value => {
             this.callbackName(value);
         });
 
         // Email Value
         var emailObservable = this.emailSubject
-        .debounce(() => Rx.Observable.timer(300))
-        .map(x => this.observableEmail(x))
-        .flatMap(x => x)
+            .debounce(() => Rx.Observable.timer(200))
+            .map(x => this.observableEmail(x))
+            .flatMap(x => x)
 
-        emailObservable.subscribe( value => {
+        emailObservable.subscribe(value => {
             this.callbackEmail(value);
         });
     }
@@ -43,7 +43,7 @@ export class IsAvailableService implements I_RuleService{
      * @param name 
      */
 
-    public name(name: string, callback: (value: boolean) => void ): void {
+    public name(name: string, callback: (value: boolean) => void): void {
         this.callbackName = callback;
         this.nameSubject.next(name);
     }
@@ -67,8 +67,8 @@ export class IsAvailableService implements I_RuleService{
      * @param name 
      */
 
-    public email(email: string, callback: (value: boolean) => void ): void {
-       // console.log("send value" + email)
+    public email(email: string, callback: (value: boolean) => void): void {
+        // console.log("send value" + email)
         this.callbackEmail = callback;
         this.emailSubject.next(email);
     }
@@ -88,10 +88,15 @@ export class IsAvailableService implements I_RuleService{
     }
 
     shellMethod(value: string, method: "name" | "email", callback: (res: boolean) => void) {
-        switch(method) {
+        switch (method) {
             case "name":
-            this.name(value, callback);
-            break;
+                this.name(value, callback);
+                break;
+            case "email":
+                this.email(value, callback);
+                break;
+            default:
+                throw new Error(method + ' name does not exist in function switch');
         }
     }
 

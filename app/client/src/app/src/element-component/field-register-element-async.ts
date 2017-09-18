@@ -7,12 +7,16 @@ export class FieldRegisterElementAsync<T extends I_ValueBoxAsync> extends Elemen
     private callID: number = 0;
 
     public interrupt(value: T, message?: string) {
-        if(this.getCallID() < value.callID) return;
+        if(value.callID ==  undefined) throw new Error('value.callID is undefined do you forget add AsyncRule?')
+        if(this.getCallID() > value.callID) return;
+
         this.setMessage(message);
         this.interruptCallback();
     }
     public confirm(value: T) {
-        if(this.getCallID() < value.callID) return;
+        if(value.callID ==  undefined) throw new Error('value.callID is undefined do you forget add AsyncRule?')
+        if(this.getCallID() > value.callID) return;
+
         this.setMessage('');
         this.confirmCallback(value);
     }

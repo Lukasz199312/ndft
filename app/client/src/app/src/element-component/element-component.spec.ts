@@ -62,12 +62,14 @@ describe('Element component', () => {
 
     it('Field should return message through messenger when fail', () => {
         field.check({ value: 'Discord', optional: '123456' });
-        expect(messenger.getMessage()).toEqual(matchMessage);
+        messenger.update();
+        expect(messenger.msg).toEqual(matchMessage);
     });
 
     it('Field should does not return message through messenger when confirm', () => {
         field.check({ value: 'Discord', optional: 'Discord' });
-        expect(messenger.getMessage()).not.toEqual(matchMessage);
-        expect(messenger.getMessage()).toEqual('');
+        messenger.update();
+        expect(messenger.msg).not.toEqual(matchMessage);
+        expect(messenger.msg).toEqual('');
     });
 });

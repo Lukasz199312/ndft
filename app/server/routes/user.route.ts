@@ -54,7 +54,7 @@ export class UserRoute extends RoutePermission implements I_Route {
             if (password != repeatPassword) return res.send({ registerComplete: false, message: 'The password must be the same' });
 
             if (!syntax.isEmailAddress(email)) return res.send({ registerComplete: false, message: 'Invalid email address' });
-            if (!syntax.Length(6, 32, password)) return res.send({ registerComplete: false, message: 'Invalid password length' });
+            if (!syntax.Length(3, 32, password)) return res.send({ registerComplete: false, message: 'Invalid password length' });
             //if (!syntax.isAlphaNumeric(password)) return res.send({ registerComplete: false, message: 'Invalid password syntax' });
 
             getUser.by({ name: name }).then(resolve => {
@@ -85,7 +85,8 @@ export class UserRoute extends RoutePermission implements I_Route {
 
     private isNameAvailable() {
         this.router.get('/api/user-name-available/:name', (req, res, next) => {
-            var name = req.params.name;
+            var name:string = req.params.name;
+            name = name.toLocaleLowerCase();
             new GetUser().by({ name: name }).then((resolve) => {
 
                 if (resolve == null) return res.send({ isAvailable: true })
@@ -117,7 +118,7 @@ export class UserRoute extends RoutePermission implements I_Route {
             var password = DecodeHex.decode(req.params.password);
             var syntax = new SyntaxVerification();
             
-            if (!syntax.Length(6, 32, password)) return res.send({ registerComplete: false, message: 'Invalid password length' });
+            if (!syntax.Length(3, 32, password)) return res.send({ registerComplete: false, message: 'Invalid password length' });
             if (!syntax.isAlphaNumeric(password)) return res.send({ registerComplete: false, message: 'Invalid password syntax' });
             return res.send({ registerComplete: true, message: 'OK!' });
         });

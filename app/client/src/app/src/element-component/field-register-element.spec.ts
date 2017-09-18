@@ -83,7 +83,7 @@ var msg = {
 }
 
 
-fdescribe('field rule service synchronization', () => {
+describe('field rule service synchronization', () => {
     var root: ElementComponent<I_ValueBox>
     var element: FieldRule<I_ValueBox>;
     var elementService: FieldRuleService<I_ValueBox>;

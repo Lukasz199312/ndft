@@ -13,6 +13,7 @@ import { IsAvailableService } from '../../../src/is-available.service';
 import { SyntaxService } from '../../../src/syntax.service';
 import { Observable } from "rxjs/Observable";
 import { RegisterService } from "./register.service";
+import { I_RuleService } from "../../../src/element-component/rules/i-rule-service";
 
 let translations: any = {
     "Register": {
@@ -46,15 +47,29 @@ class FakeLoader implements TranslateLoader {
 
 }
 
-class isAvailableServiceStub {
-    email(value: string): Promise<boolean> {
-        if (value == 'exist@email.pl') return Promise.resolve(false);
-        return Promise.resolve(true);
+class isAvailableServiceStub implements I_RuleService{
+
+    shellMethod(value: string, method: string, callback: (res: boolean) => void) {
+        switch (method) {
+            case "name":
+                this.name(value, callback);
+                break;
+            case "email":
+                this.email(value, callback);
+                break;
+            default:
+                throw new Error(method + ' name does not exist in function switch');
+        }
     }
 
-    name(value: string): Promise<boolean> {
-        if (value == 'exist') return Promise.resolve(false);
-        return Promise.resolve(true);
+    email(value: string, callback: (value: boolean) => void): void {
+        if (value == 'exist@email.pl')  callback(false);
+        else callback(true);
+    }
+
+    name(value: string, callback: (value: boolean) => void): void {
+        if (value == 'exist')  callback(false);
+        else callback(true);
     }
 }
 
@@ -81,7 +96,7 @@ class RegisterServiceStub {
     }
 }
 
-xdescribe('Register Modal Component', () => {
+describe('Register Modal Component', () => {
     let comp: RegisterModalComponent;
     let fixture: ComponentFixture<RegisterModalComponent>;
     let de: DebugElement;
@@ -97,8 +112,8 @@ xdescribe('Register Modal Component', () => {
     let errorEmailDiv: HTMLDivElement;
     let errorPasswordDiv: HTMLDivElement;
 
-    let syntaxService: SyntaxServiceStub;
     let registerService: RegisterServiceStub;
+
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -112,14 +127,12 @@ xdescribe('Register Modal Component', () => {
             ],
             providers: [
                 { provide: IsAvailableService, useClass: isAvailableServiceStub },
-                { provide: SyntaxService, useClass: SyntaxServiceStub },
                 { provide: RegisterService, useClass: RegisterServiceStub }
             ]
         }).overrideComponent(RegisterModalComponent, {
             set: {
                 providers: [
                     { provide: IsAvailableService, useClass: isAvailableServiceStub },
-                    { provide: SyntaxService, useClass: SyntaxServiceStub },
                     { provide: RegisterService, useClass: RegisterServiceStub }
                 ]
             }
@@ -127,8 +140,6 @@ xdescribe('Register Modal Component', () => {
             .compileComponents()
             .then(() => {
                 fixture = TestBed.createComponent(RegisterModalComponent);
-
-                syntaxService = fixture.debugElement.injector.get(SyntaxService, SyntaxServiceStub);
                 registerService = fixture.debugElement.injector.get(RegisterService, RegisterServiceStub);
 
                 translate = TestBed.get(TranslateService);
@@ -145,13 +156,10 @@ xdescribe('Register Modal Component', () => {
                 passwordInput = fixture.debugElement.query(By.css('#input-password-id')).nativeElement;
                 passwordRepeatInput = fixture.debugElement.query(By.css('#input-repeat-password-id')).nativeElement;
 
-                syntaxService.value = true;
             })
     }));
 
-
     it('is defined', () => {
-        syntaxService.value = true;
         expect(TranslateService).toBeDefined();
         expect(translate).toBeDefined();
         expect(translate instanceof TranslateService).toBeTruthy();
@@ -198,6 +206,7 @@ xdescribe('Register Modal Component', () => {
             fixture.whenStable().then(() => {
                 fixture.detectChanges();
                 expect(fixture.debugElement.query(By.css('#name-error-msg-id'))).toBeNull();
+                expect(comp.nameMessenger.msg).toBe('');
                 expect(nameInput.classList.contains('valid')).toBeTruthy();
             })
         });
@@ -369,8 +378,6 @@ xdescribe('Register Modal Component', () => {
     // Password Test
 
     it('should display Password does not match when password and repeat password not equal', async(() => {
-
-        syntaxService.value = true;
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
@@ -399,14 +406,27 @@ xdescribe('Register Modal Component', () => {
         })
     }));
 
+    it('should dont display password wrong syntax', async(() => {
+        fixture.detectChanges();
+
+        fixture.whenStable().then(() => {
+            passwordInput.value = 'a@#$%^&*()';
+            passwordInput.dispatchEvent(new Event('input'));
+
+            fixture.whenStable().then(() => {
+                fixture.detectChanges();
+                expect(fixture.debugElement.query(By.css('#password-error-msg-id'))).toBeNull();
+                expect(passwordRepeatInput.classList.contains('valid'));
+            })
+
+        })
+    }));
+
     it('should display password wrong syntax', async(() => {
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
-
-            syntaxService.value = false;
-            passwordInput.value = '````````````';
-
+            passwordInput.value = '``````` ``` ``';
             passwordInput.dispatchEvent(new Event('input'));
 
             fixture.whenStable().then(() => {
@@ -423,8 +443,6 @@ xdescribe('Register Modal Component', () => {
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
-
-            syntaxService.value = false;
             passwordInput.value = 'pas 123';
 
             passwordInput.dispatchEvent(new Event('input'));
@@ -443,8 +461,6 @@ xdescribe('Register Modal Component', () => {
         fixture.detectChanges();
 
         fixture.whenStable().then(() => {
-
-            syntaxService.value = false;
             passwordInput.value = '`';
 
             passwordRepeatInput.value = 'wrong';
@@ -471,6 +487,7 @@ xdescribe('Register Modal Component', () => {
         });
     }));
 
+    //button
     it('should enabled register button', async(() => {
         fixture.detectChanges();
 
@@ -481,8 +498,6 @@ xdescribe('Register Modal Component', () => {
 
             fixture.whenStable().then(() => {
                 // Password Input
-
-                syntaxService.value = true;
                 passwordInput.value = 'password123';
 
                 passwordInput.dispatchEvent(new Event('input'));

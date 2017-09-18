@@ -14,6 +14,7 @@ export class FieldRuleDirective {
     //private nativeElement: Node;
     
     constructor(private element: ElementRef) {
+        console.log(this.color);
         this.element.nativeElement.style.backgroundColor = 'red';
     }
 

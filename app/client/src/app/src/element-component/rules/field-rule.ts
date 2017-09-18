@@ -46,4 +46,8 @@ export abstract class FieldRule<T extends I_ValueBox> extends ElementRoot<T> {
         })
     }
 
+    public resetMessage() {
+        this.root.resetMessage();
+    }
+
 }

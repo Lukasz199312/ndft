@@ -15,20 +15,20 @@
           <div class="form-group">
             <label for="name">{{'Register.Name' | translate}}</label>
             <input ngModel #nameInput="ngModel" class="form-control" id="name" name="name" minlength="6" maxlength="64" required placeholder="{{'Register.Name-Placeholder' | translate}}"
-              id="input-name-id" (input)="checkName()" [ngClass]="{'invalid': nameInvalidClass, 'valid': nameValidClass}">
+              id="input-name-id" (input)="checkName();" [ngClass]="{'invalid': nameStyleClass.invalid, 'valid': nameStyleClass.valid}">
             {{nameInvalidClass + ' ' + nameValidClass}}
-            <div class="alert alert-danger" *ngIf="nameMessenger.getMessage()" id="name-error-msg-id">
-              {{ nameMessenger.getMessage() }}
+            <div class="alert alert-danger" *ngIf="nameMessenger.msg" id="name-error-msg-id">
+              {{ nameMessenger.msg }}
             </div>
           </div>
           <!--Email Group -->
           <div class="form-group">
             <label for="email">{{'Register.Email' | translate}}</label>
             <input ngModel #emailInput="ngModel" class="form-control" id="email" name="email" minlength="6" maxlength="64" required placeholder="{{'Register.Email-Placeholder' | translate}}"
-              id="input-email-id" (input)="checkEmail()" [ngClass]="{'invalid': emailInvalidClass, 'valid': emailValidClass}">
+              id="input-email-id" (input)="checkEmail(); checkRepeatEmail()" [ngClass]="{'invalid': emailStyleClass.invalid, 'valid': emailStyleClass.valid}">
 
-            <div class="alert alert-danger" *ngIf="emailMsg" id="email-error-msg-id">
-              {{ emailMsg }}
+            <div class="alert alert-danger" *ngIf="emailMessenger.msg" id="email-error-msg-id">
+              {{ emailMessenger.msg }}
             </div>
           </div>
           <!-- Repeat Email Group -->
@@ -36,36 +36,33 @@
             <label for="emailRepeat">{{'Register.Email-Repeat' | translate}}</label>
             <input ngModel #emailRepeatInput="ngModel" ngModel class="form-control" id="emailRepeat" name="emailRepeat" required minlength="6"
               maxlength="64" Repeat.value placeholder="{{'Register.Email-Repeat-Placeholder' | translate}}" id="input-repeat-email-id"
-              (input)="checkRepeatEmail()" [ngClass]="{ 'invalid': emailRepeatInvalidClass, 'valid': emailRepeatValidClass }">
+              (input)="checkRepeatEmail()" [ngClass]="{ 'invalid': emailRepeatStyleClass.invalid, 'valid': emailRepeatStyleClass.valid }">
           </div>
           <!-- Password Group -->
           <div class="form-group">
             <label for="registerPassword">{{'Register.Password' | translate}}</label>
             <input #passwordInput='ngModel' ngModel class="form-control" type="password" id="registerPassword" name="registerPassword"
-              required minlength="6" maxlength="32" placeholder="{{'Register.Password-Placeholder' | translate}}" (input)='passwordSyntax()'
-              id="input-password-id" [class.valid]="passwordMsg == ''&& passwordInput.value != '' && isPasswordComplete " [ngClass]="{'invalid': passwordInvalidClass}">
+              required minlength="6" maxlength="32" placeholder="{{'Register.Password-Placeholder' | translate}}" (input)='checkPassword(); checkRepeatPassword()'
+              id="input-password-id" [ngClass]="{ 'invalid': passwordStyleClass.invalid, 'valid': passwordStyleClass.valid }">
           </div>
-          <div class="alert alert-danger" *ngIf="passwordMsg" id="password-error-msg-id">
-            {{ passwordMsg }}
+          <div class="alert alert-danger" *ngIf="passwordMessenger.msg " id="password-error-msg-id">
+            {{ passwordMessenger.msg }}
           </div>
           <!-- Password Repeat Group -->
           <div class="form-group">
             <label for="registerPasswordRepeat">{{'Register.Password-Repeat' | translate}}</label>
             <input #passwordRepeatInput='ngModel' ngModel class="form-control" type="password" id="registerPasswordRepeat" name="registerPasswordRepeat"
               required minlength="6" maxlength="32" required placeholder="{{'Register.Password-Repeat-Placeholder' | translate}}"
-              (input)='passwordEqual()' id="input-repeat-password-id" [ngClass]="{'invalid': passwordRepeatInvalidClass}" [class.valid]="passwordMsgNotMatch.get() == '' && passwordRepeatInput.value != ''">
+              (input)='checkRepeatPassword()' id="input-repeat-password-id" [ngClass]="{ 'invalid': passwordRepeatStyleClass.invalid, 'valid': passwordRepeatStyleClass.valid }">
           </div>
         </form>
       </div>
       <!-- Modal Footer -->
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal" [disabled]=" passwordMsg !='' || emailMsg !='' || !registerForm.form.valid"
-          id='register-button-id' (click)='registerUser(); removeStyles([email,repeatEmail,password,repeatPassword], "valid", "invalid"); registerForm.form.reset();'>Register</button>
-        <button type="button" class="btn btn-warning" data-dismiss="modal" (click)='registerForm.form.reset(); resetErrorMsg(); removeStyles([email,repeatEmail,password,repeatPassword], "valid", "invalid")'>Close</button>
-        <button type="button" class="btn btn-danger" data-dismiss="modal" [disabled]=" passwordMsg !='' || emailMsg !='' || !registerForm.form.valid"
-          id='register-button-id' (click)='registerUser(); registerForm.form.reset(); removeStyles([email,repeatEmail,password,repeatPassword], "valid", "invalid")'>Register</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal" [disabled]="nameMessenger.msg !='' || emailMessenger.msg !='' || passwordMessenger.msg !='' || !registerForm.form.valid"
+          id='register-button-id' (click)='registerUser(); closeModal()'>Register</button>
+        <button type="button" #closeBtn class="btn btn-warning" data-dismiss="modal" (click)='resetAllField(); clearAllStyle(); resetAllMsg();' id='btnClose'>Close</button>
       </div>
     </div>
   </div>
 </div>
-

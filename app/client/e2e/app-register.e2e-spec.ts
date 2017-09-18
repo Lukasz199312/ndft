@@ -1,6 +1,9 @@
 import { ClientPage } from './app-register.po';
 import * as en from './../src/assets/i18n/en';
-import { browser, element, by } from 'protractor';
+import { browser, element, by, protractor, ElementFinder } from 'protractor';
+
+var until = protractor.ExpectedConditions;
+var defaultWaitTime: number = 5000;
 
 describe('client App - register', () => {
   let page: ClientPage;
@@ -19,10 +22,23 @@ describe('client App - register', () => {
     expect(page.getRegisterLink().isDisplayed());
   })
 
-  it('should open register modal after click on register link', () => {
-    page.getRegisterLink().click();
-    expect(page.getRegisterModal().isDisplayed());
+  it('should not display register modal before open register link', (done) => {
+    page.getRegisterModal().isDisplayed().then((value) => {
+      expect(value).toBeFalsy();
+      done();
+    })
+  });
+
+  it('should open register modal after click on register link', (done) => {
+
+    page.getRegisterLink().click().then(() => {
+      waitForAppear(page.getRegisterModal()).then((result) => {
+        expect(result).toBeTruthy();
+        expect(page.getRegisterModal().isDisplayed().then((val) => { done() }));
+      });
+    });
   })
+
 
   it('should translate text', (done) => {
     page.getRegisterModal().getAttribute('innerHTML').then((HTML) => {
@@ -54,7 +70,6 @@ describe('client App - register', () => {
 
             expect(valueClass).toContain('invalid');
             page.getErrorNameMsg().getAttribute('innerHTML').then((errorMSG) => {
-
               expect(errorMSG).toContain(translate['Name-Wrong-Syntax']);
               done();
             })
@@ -133,7 +148,7 @@ describe('client App - register', () => {
       page.getInputPassword().sendKeys("nopess123").then(() => {
         page.getInputRepeatPassword().sendKeys('nopes1').then(() => {
           page.getErrorPasswordMsg().getAttribute('innerHTML').then((value) => {
-            //innerHTML return !@#$%^&amp;*() instead !@#$%^&*()'on the end, so we check only first 20 chracter
+            //innerHTML return (...) !@#$%^&amp;*() instead (...) !@#$%^&*()'on the end, so we check only first 20 chracter
             expect(value).toContain(translate['Password-Match']);
             done();
           });
@@ -147,33 +162,39 @@ describe('client App - register', () => {
    */
 
   it('should close modal window', (done) => {
+
     page.getCloseButton().click().then(() => {
-      page.getRegisterModal().isDisplayed().then((value) => {
-        expect(value).toBeFalsy();
+      waitForDisappear(page.getRegisterModal()).then(res => {
+        expect(res).toBeTruthy();
         done();
       })
     });
+
+
   });
 
   it('should open modal window', (done) => {
     page.getRegisterLink().click().then(() => {
-      page.getRegisterModal().isDisplayed().then((value) => {
-        expect(value);
-        done();
+      waitForAppear(page.getRegisterModal()).then((res) => {
+        expect(res).toBeTruthy();
+        
+        page.getRegisterModal().isDisplayed().then((value) => {
+          expect(value).toBeTruthy();
+          done();
+        })
       })
+
     })
   });
-
-
 
   /**
    * check that the inputs are empty and dont have set valid or invalid form
    */
   it('name input should be empty', (done) => {
-    page.getInputName().getAttribute('value').then((value) => {
-      expect(value).toEqual('');
-      done();
-    });
+      page.getInputName().getAttribute("value").then((value) => {
+        expect(value).toEqual('');
+        done();
+      });
   });
 
 
@@ -212,8 +233,8 @@ describe('client App - register', () => {
 
   it('name input should be empty', (done) => {
     page.getInputName().getAttribute('class').then((value) => {
-      expect(value).not.toContain('valid');
-      expect(value).not.toContain('invalid');
+      expect(value).not.toMatch(/ valid /g);
+      expect(value).not.toMatch(/ invalid /g);
 
       done();
     });
@@ -221,8 +242,8 @@ describe('client App - register', () => {
 
   it('email input should be empty', (done) => {
     page.getInputEmail().getAttribute('class').then((value) => {
-      expect(value).not.toContain('valid');
-      expect(value).not.toContain('invalid');
+      expect(value).not.toMatch(/ valid /g);
+      expect(value).not.toMatch(/ invalid /g);
 
       done();
     });
@@ -230,8 +251,8 @@ describe('client App - register', () => {
 
   it('repeate email input should be empty', (done) => {
     page.getInputRepatEmail().getAttribute('class').then((value) => {
-      expect(value).not.toContain('valid');
-      expect(value).not.toContain('invalid');
+      expect(value).not.toMatch(/ valid /g);
+      expect(value).not.toMatch(/ invalid /g);
 
       done();
     });
@@ -239,8 +260,8 @@ describe('client App - register', () => {
 
   it('password input should be empty', (done) => {
     page.getInputPassword().getAttribute('class').then((value) => {
-      expect(value).not.toContain('valid');
-      expect(value).not.toContain('invalid');
+      expect(value).not.toMatch(/ valid /g);
+      expect(value).not.toMatch(/ invalid /g);
 
       done();
     });
@@ -248,8 +269,8 @@ describe('client App - register', () => {
 
   it('email input should be empty', (done) => {
     page.getInputRepeatPassword().getAttribute('class').then((value) => {
-      expect(value).not.toContain('valid');
-      expect(value).not.toContain('invalid');
+      expect(value).not.toMatch(/ valid /g);
+      expect(value).not.toMatch(/ invalid /g);
 
       done();
     });
@@ -282,3 +303,11 @@ describe('client App - register', () => {
   });
 
 });
+
+function waitForAppear(ele: ElementFinder, wait = defaultWaitTime, message = "Element taking too long to appear in the DOM") {
+  return browser.wait(until.visibilityOf(ele), 5000, message)
+}
+
+function waitForDisappear(ele: ElementFinder, wait = defaultWaitTime, message = "Element taking too long to disappear in the DOM") {
+  return browser.wait(until.invisibilityOf(ele), wait, message);
+}

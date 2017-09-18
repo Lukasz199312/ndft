@@ -17,11 +17,12 @@ export abstract class ElementComponent<T extends I_ValueBox> extends ElementRoot
         return this.message;
     }
 
+    public resetMessage() {
+        this.message = '';
+    }
+    
     protected setMessage(message: string) {
         this.message = message;
     }
 
-    private resetMessage() {
-        this.message = '';
-    }
 }

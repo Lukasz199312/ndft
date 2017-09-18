@@ -3,18 +3,18 @@ import { ElementComponent } from "./element-component";
 
 export class FieldRegisterElement<T extends I_ValueBox> extends ElementComponent<T> {
     private confirmCallback: (value: T) => void;
-    private interruptCallback: () => void;
+    private interruptCallback: (message?: string) => void;
 
     public interrupt(value: T, message?: string) {
         this.setMessage(message);
-        this.interruptCallback();
+        this.interruptCallback(message);
     }
     public confirm(value: T) {
         this.setMessage('');
         this.confirmCallback(value);
     }
 
-    public setInterrupt(callback:() => void) {
+    public setInterrupt(callback:(message?: string) => void) {
         this.interruptCallback = callback;
     }
 
