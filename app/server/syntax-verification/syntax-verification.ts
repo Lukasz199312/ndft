@@ -1,4 +1,11 @@
 export class SyntaxVerification {
+    public isName(val: string) : boolean {
+        if(val.match(/^[a-zA-Z0-9]* ?[a-zA-Z0-9]*$/)) {
+            return true;
+        }
+        return false;
+    }
+
     public emailVerification(_email): {msg:string, result:boolean} {
         //data validation email
         if (this.Length(4, 32, _email)) {

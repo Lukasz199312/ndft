@@ -2,14 +2,14 @@ import { Module } from '../basic-module/module';
 
 import * as nodemailer from 'nodemailer';
 import * as smtp from 'nodemailer-smtp-transport';
+import { MailerMessage } from "./mailer-message";
 
-export class NodemailerModule extends Module {
+export class NodemailerModule  {
     transporter: nodemailer.Transporter;
 
     public mailOptions;
 
     constructor() {
-        super(null);
         this.mailOptions = {
             from: 'sampletest@gmail.com',
             to: 'lukasz199312@gmail.com',
@@ -30,7 +30,10 @@ export class NodemailerModule extends Module {
 
     }
 
-    public sendMail() {
+    public sendMail(message: MailerMessage) {
+        this.mailOptions.subject = message.getMailMSG();
+        this.mailOptions.html = message.getMailMSG();
+
         this.transporter.sendMail({
             from: this.mailOptions.from,
             to: this.mailOptions.to,
@@ -39,13 +42,4 @@ export class NodemailerModule extends Module {
             text: this.mailOptions.text
         });
     }
-
-    public execute(data: any) {
-        this.mailOptions.subject = data.mailSubject;
-        this.mailOptions.html = data.mailMsg;
-
-        this.sendMail();
-    }
-
-
 }

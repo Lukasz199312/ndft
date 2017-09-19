@@ -53,9 +53,11 @@ export class UserRoute extends RoutePermission implements I_Route {
 
             if (password != repeatPassword) return res.send({ registerComplete: false, message: 'The password must be the same' });
 
+            if (!syntax.Length(3, 32, name)) return res.send({ registerComplete: false, message: 'Invalid name length' });
+            if (!syntax.isName(name)) return res.send({ registerComplete: false, message: 'Invalid name syntax' });
             if (!syntax.isEmailAddress(email)) return res.send({ registerComplete: false, message: 'Invalid email address' });
-            if (!syntax.Length(3, 32, password)) return res.send({ registerComplete: false, message: 'Invalid password length' });
-            //if (!syntax.isAlphaNumeric(password)) return res.send({ registerComplete: false, message: 'Invalid password syntax' });
+            if (!syntax.Length(6, 32, password)) return res.send({ registerComplete: false, message: 'Invalid password length' });
+            if (!syntax.isAlphaNumeric(password)) return res.send({ registerComplete: false, message: 'Invalid password syntax' });
 
             getUser.by({ name: name }).then(resolve => {
                 if (resolve) return res.send({ registerComplete: false, message: 'Username exist in database' });
@@ -63,7 +65,7 @@ export class UserRoute extends RoutePermission implements I_Route {
                 getUser.by({ email: email }).then(resolve => {
                     if (resolve) return res.send({ registerComplete: false, message: 'Email Address exist in database' });
 
-                    new AddUser().add(name, password, email, { registerComplete: true }, { registerComplete: false }).then(
+                    new AddUser().add(name, password, email, { registerComplete: true, message: 'OK' }, { registerComplete: false, message: 'Something went wrong' }).then(
                         success => {
                             res.send(success);
                         },

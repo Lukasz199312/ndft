@@ -59,7 +59,7 @@ describe('User route', () => {
             });
 
     });
-
+    
     it('/api/user : should return fail when password not equal to repeatPassword', (done) => {
         server.agent.post('/api/user')
             .send({ name: 'admin', password: '121212121212', repeatPassword: '12121212121233', email: 'daniel@os.pl' })
@@ -84,10 +84,21 @@ describe('User route', () => {
 
     it('/api/user : should return fail password has invalid length', (done) => {
         server.agent.post('/api/user')
-            .send({ name: 'admin', password: '1212', repeatPassword: '1212', email: 'daniel@os.pl' })
+            .send({ name: 'admin', password: '2212', repeatPassword: '2212', email: 'daniel@os.pl' })
             .expect(200, (err, res) => {
                 expect(res.body.registerComplete).toBeFalsy();
                 expect(res.body.message).toContain('Invalid password length');
+                done();
+            });
+
+    });
+
+    it('/api/user : should return fail when password has invalid syntax', (done) => {
+        server.agent.post('/api/user')
+            .send({ name: 'admin', password: '``2212``', repeatPassword: '``2212``', email: 'daniel@os.pl' })
+            .expect(200, (err, res) => {
+                expect(res.body.registerComplete).toBeFalsy();
+                expect(res.body.message).toContain('Invalid password syntax');
                 done();
             });
 
@@ -99,6 +110,50 @@ describe('User route', () => {
             .expect(200, (err, res) => {
                 expect(res.body.registerComplete).toBeFalsy();
                 expect(res.body.message).toContain('Username exist in database');
+                done();
+            });
+
+    });
+
+    it('/api/user : should return fail when name has invalid length (not enough characters)', (done) => {
+        server.agent.post('/api/user')
+            .send({ name: 'aw', password: '121212121212', repeatPassword: '121212121212', email: 'daniel@os.pl' })
+            .expect(200, (err, res) => {
+                expect(res.body.registerComplete).toBeFalsy();
+                expect(res.body.message).toContain('Invalid name length');
+                done();
+            });
+
+    });
+
+    it('/api/user : should return fail when name has invalid length (too many characters)', (done) => {
+        server.agent.post('/api/user')
+            .send({ name: '1234567890123456789012345678901234567890', password: '121212121212', repeatPassword: '121212121212', email: 'daniel@os.pl' })
+            .expect(200, (err, res) => {
+                expect(res.body.registerComplete).toBeFalsy();
+                expect(res.body.message).toContain('Invalid name length');
+                done();
+            });
+
+    });
+
+    it('/api/user : should return fail when name has invalid syntax - adam wolfram second', (done) => {
+        server.agent.post('/api/user')
+            .send({ name: 'adam wolfram second', password: '121212121212', repeatPassword: '121212121212', email: 'daniel@os.pl' })
+            .expect(200, (err, res) => {
+                expect(res.body.registerComplete).toBeFalsy();
+                expect(res.body.message).toContain('Invalid name syntax');
+                done();
+            });
+
+    });
+
+    it('/api/user : should return fail when name has invalid syntax -moje456^&', (done) => {
+        server.agent.post('/api/user')
+            .send({ name: '-moje456^&', password: '121212121212', repeatPassword: '121212121212', email: 'daniel@os.pl' })
+            .expect(200, (err, res) => {
+                expect(res.body.registerComplete).toBeFalsy();
+                expect(res.body.message).toContain('Invalid name syntax');
                 done();
             });
 
